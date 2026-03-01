@@ -1,1 +1,5 @@
+---
+description: Arch review with a git tree lens
+---
+
 // Reference: https://raw.githubusercontent.com/vindicta-platform/.github/main/.agent/workflows/git-arch-review.md

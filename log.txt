@@ -1,0 +1,145 @@
+commit d13fa63f861acba6192c49eef4d5e7216ee2523b
+Author: Brandon Fox <32090240+brandon-fox@users.noreply.github.com>
+Date:   Sun Mar 1 16:17:04 2026 -0500
+
+    feat: add automated spec clarification workflow
+
+A	.agent/scripts/clarify_spec.py
+A	.github/workflows/spec-clarify.yml
+
+commit 66aa0247c02a185c99b6475f982602fc8125a90a
+Author: Brandon Fox <32090240+brandon-fox@users.noreply.github.com>
+Date:   Sun Mar 1 16:09:50 2026 -0500
+
+    docs: complete platform specification registry (001-047)
+
+A	.agent/rules.md
+M	.agent/workflows/git-arch-review.md
+M	.agent/workflows/git-explain-history.md
+M	.agent/workflows/git-pr-from-tree.md
+M	.agent/workflows/git-review-commits.md
+A	.agent/workflows/speckit.analyze.md
+A	.agent/workflows/speckit.checklist.md
+A	.agent/workflows/speckit.clarify.md
+A	.agent/workflows/speckit.constitution.md
+A	.agent/workflows/speckit.implement.md
+A	.agent/workflows/speckit.plan.md
+A	.agent/workflows/speckit.specify.md
+A	.agent/workflows/speckit.tasks.md
+A	.agent/workflows/speckit.taskstoissues.md
+A	.clinerules
+M	.gitignore
+M	.specify/memory/constitution.md
+A	.specify/scripts/powershell/check-prerequisites.ps1
+A	.specify/scripts/powershell/common.ps1
+A	.specify/scripts/powershell/create-new-feature.ps1
+A	.specify/scripts/powershell/setup-plan.ps1
+A	.specify/scripts/powershell/update-agent-context.ps1
+A	.specify/templates/agent-file-template.md
+A	.specify/templates/checklist-template.md
+A	.specify/templates/constitution-template.md
+A	.specify/templates/plan-template.md
+A	.specify/templates/spec-template.md
+A	.specify/templates/tasks-template.md
+A	001-ocr-parser/checklists/requirements.md
+A	001-ocr-parser/spec.md
+A	002-dice-core/checklists/requirements.md
+A	002-dice-core/spec.md
+A	003-dice-evaluator/checklists/requirements.md
+A	003-dice-evaluator/spec.md
+A	004-dice-parser/checklists/requirements.md
+A	004-dice-parser/spec.md
+A	005-rag-pipeline/checklists/requirements.md
+A	005-rag-pipeline/spec.md
+A	006-rules-validation-parser/checklists/requirements.md
+A	006-rules-validation-parser/spec.md
+A	007-battle-transcript-engine/checklists/requirements.md
+A	007-battle-transcript-engine/spec.md
+A	008-entropy-buffer-service/checklists/requirements.md
+A	008-entropy-buffer-service/spec.md
+A	009-cross-domain-agents/checklists/requirements.md
+A	009-cross-domain-agents/spec.md
+A	010-agent-persistence-layer/checklists/requirements.md
+A	010-agent-persistence-layer/spec.md
+A	011-agent-security-isolation/checklists/requirements.md
+A	011-agent-security-isolation/spec.md
+A	012-system-audit-log/checklists/requirements.md
+A	012-system-audit-log/spec.md
+A	013-logi-slate-ui-framework/checklists/requirements.md
+A	013-logi-slate-ui-framework/spec.md
+A	014-economy-management-engine/checklists/requirements.md
+A	014-economy-management-engine/spec.md
+A	015-warscribe-core-notation/checklists/requirements.md
+A	015-warscribe-core-notation/spec.md
+A	016-oracle-intelligence-suite/checklists/requirements.md
+A	016-oracle-intelligence-suite/spec.md
+A	017-platform-evolution-map/checklists/requirements.md
+A	017-platform-evolution-map/spec.md
+A	018-modular-ecosystem-registry/checklists/requirements.md
+A	018-modular-ecosystem-registry/spec.md
+A	019-real-time-tournament-pairing/checklists/requirements.md
+A	019-real-time-tournament-pairing/spec.md
+A	020-live-stream-overlay-widget/checklists/requirements.md
+A	020-live-stream-overlay-widget/spec.md
+A	021-team-club-management/checklists/requirements.md
+A	021-team-club-management/spec.md
+A	022-voice-to-text-battle-logging/checklists/requirements.md
+A	022-voice-to-text-battle-logging/spec.md
+A	023-mobile-companion-app/checklists/requirements.md
+A	023-mobile-companion-app/spec.md
+A	024-hardware-dice-tower-integration/checklists/requirements.md
+A	024-hardware-dice-tower-integration/spec.md
+A	025-ar-table-overlay/checklists/requirements.md
+A	025-ar-table-overlay/spec.md
+A	026-voice-activated-scorekeeping/checklists/requirements.md
+A	026-voice-activated-scorekeeping/spec.md
+A	027-visual-army-painter/checklists/requirements.md
+A	027-visual-army-painter/spec.md
+A	028-coaching-marketplace/checklists/requirements.md
+A	028-coaching-marketplace/spec.md
+A	029-to-dashboard/checklists/requirements.md
+A	029-to-dashboard/spec.md
+A	030-anti-cheat-analysis/checklists/requirements.md
+A	030-anti-cheat-analysis/spec.md
+A	031-cross-game-inventory-sync/checklists/requirements.md
+A	031-cross-game-inventory-sync/spec.md
+A	032-campaign-map-engine/checklists/requirements.md
+A	032-campaign-map-engine/spec.md
+A	033-subscription-gifting/checklists/requirements.md
+A	033-subscription-gifting/spec.md
+A	034-battle-replay-heatmaps/checklists/requirements.md
+A	034-battle-replay-heatmaps/spec.md
+A	035-local-store-locator/checklists/requirements.md
+A	035-local-store-locator/spec.md
+A	036-twitch-extension-integration/checklists/requirements.md
+A	036-twitch-extension-integration/spec.md
+A	037-smart-watch-score-counter/checklists/requirements.md
+A	037-smart-watch-score-counter/spec.md
+A	038-archetype-id/checklists/requirements.md
+M	038-archetype-id/spec.md
+A	039-faq-scraper/checklists/requirements.md
+A	039-faq-scraper/spec.md
+A	040-reputation-system/checklists/requirements.md
+A	040-reputation-system/spec.md
+A	041-data-export/checklists/requirements.md
+A	041-data-export/spec.md
+A	042-i18n-support/checklists/requirements.md
+A	042-i18n-support/spec.md
+A	043-offline-mode/checklists/requirements.md
+A	043-offline-mode/spec.md
+A	045-positional-heuristics/checklists/requirements.md
+M	045-positional-heuristics/spec.md
+A	046-roster-synergy/checklists/requirements.md
+M	046-roster-synergy/spec.md
+A	047-upset-detector/checklists/requirements.md
+M	047-upset-detector/spec.md
+A	GEMINI.md
+
+commit 69686c4e63d7086c382dba4c7959e589711cd467
+Author: Brandon Fox <32090240+brandon-fox@users.noreply.github.com>
+Date:   Sun Mar 1 14:30:43 2026 -0500
+
+    feat: Introduce the Vindicta Platform Constitution and update `.gitignore` to exclude new project-specific directories.
+
+M	.gitignore
+A	.specify/memory/constitution.md
