@@ -1,45 +1,61 @@
-# Feature Specification: FEAT-038 List Archetype Identification
+# Feature Specification: 038-archetype-id
 
 **Feature Branch**: `038-archetype-id`  
-**Created**: 2026-02-28  
+**Created**: 2026-03-01  
 **Status**: Draft  
-**Input**: User description: "Advance meta analysis capabilities."
+**Input**: Established reference spec for archetype identification.
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Automated Roster Tagging (Priority: P1)
-As a meta analyst, I want uploaded rosters to be automatically tagged with their strategic archetype (e.g., "Horde", "Vehicle Skew", "MSU", "Deathstar"), so that I can filter win-rates by playstyle rather than just faction.
-**Why this priority**: Faction win-rates are too broad. Archetypes define the true meta.
-**Independent Test**: Can be tested by uploading 10 known "Vehicle Skew" lists and verifying the classifier tags at least 9 of them correctly.
+### User Story 1 - Cross-System Archetype Recognition (Priority: P1)
+
+As a multi-game player, I want the platform to recognize that "Aggro Melee" in Game A and "Swarm Combat" in Game B share a similar structural archetype so that my player profile reflects my consistent playstyle regardless of the specific ruleset.
+
+**Why this priority**: Core to providing meaningful "Player Archetype" analytics and cross-game coaching.
+
+**Independent Test**: Load two disparate rosters from different game systems. Verify that the Archetype Engine assigns correctly identified "Class Tags" (e.g., #Horde, #Elite, #GlassCannon) based on unit-level attribute distributions.
 
 **Acceptance Scenarios**:
-1. **Given** a parsed roster containing 80% points invested in Vehicles/Monsters, **When** ingested by the Oracle, **Then** it is tagged with "Vehicle Skew".
 
-### User Story 2 - Archetype Matchup Matrix (Priority: P2)
-As a competitive player, I want to see a matrix showing how my archetype performs against other archetypes, so I know my bad matchups before a tournament.
-**Why this priority**: High-value insight for subscription users.
-**Independent Test**: Can be tested by querying the aggregated statistics and verifying the UI plots the cross-archetype win percentages.
+1. **Given** a roster consisting of 80% low-cost, high-velocity units, **When** processed by the engine, **Then** it is assigned the "Swarm" archetype ID global tag.
+
+---
+
+### User Story 2 - Roster Comparison & Meta Analysis (Priority: P2)
+
+As a tournament analyst, I want to see which archetypes are currently dominating the competitive meta, rather than just which factions, so that I can provide deeper strategic commentary.
+
+**Why this priority**: Faction names (e.g., "Space Marines") obscure the actual *way* the army plays. Archetype IDs reveal the underlying mechanical trends.
+
+**Independent Test**: Aggregate 100 tournament rosters. Verify that the dashboard can group them by Archetype ID (e.g., 20% "Castle", 40% "Alpha Strike") with 100% accuracy based on the defined heuristic thresholds.
 
 **Acceptance Scenarios**:
-1. **Given** sufficient match data, **When** viewing the Meta Dashboard, **Then** a heat-matrix displays Win Rates of (Row Archetype) vs (Col Archetype).
+
+1. **Given** a collection of top-performing rosters, **When** grouped by Archetype, **Then** the system identifies which archetype ID has the highest win rate across all factions.
 
 ### Edge Cases
-- What if a list fits multiple archetypes? (Support primary and secondary archetype tags).
-- How are new meta-shifts handled? (Unsupervised clustering periodically runs to identify emerging untagged archetypes).
+
+- What happens if a roster fits two archetypes equally (e.g., Hybrid)? (System must allow "Multi-Tagging" or identify a "Primary" and "Secondary" archetype ID).
+- How handles new unit types that haven't been categorized? (System defaults to a "Generalist" archetype until enough sample data exists to trigger a heuristic classification).
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: The Meta-Oracle MUST analyze incoming parsed rosters and apply one or more semantic tags.
-- **FR-002**: The classification logic MUST use configurable rules (e.g., `if count(units with MODEL_COUNT > 20) >= 3 -> "Horde"`).
-- **FR-003**: The system MUST expose an API endpoint to query win-rates filtered by these tags.
+
+- **FR-001**: System MUST provide a global registry of standardized Archetype IDs (e.g., Swarm, Elite, Gunline).
+- **FR-002**: System MUST analyze roster data-models to identify underlying mechanical signatures.
+- **FR-003**: System MUST provide deterministic mapping between unit-level attributes and archetype categories.
+- **FR-004**: System MUST expose archetype metadata to other platform services (Analytics, Anti-Cheat, Matchmaking).
 
 ### Key Entities
-- **ArchetypeDefinition**: The rule-based or ML-based criteria defining a strategy.
-- **RosterTag**: The mapping of an archetype to a specific submitted list.
+
+- **Archetype ID**: The unique platform identifier for a specific playstyle signature.
+- **Heuristic Signature**: The mathematical definition of unit distributions that trigger an archetype identification.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
-- **SC-001**: 95% of parsed lists are successfully assigned at least one archetype tag.
-- **SC-002**: The Archetype Classification executes synchronously during list upload (< 200ms).
+
+- **SC-001**: Archetype classification of a 2000-point roster completes in < 100 milliseconds.
+- **SC-002**: Recursive metadata identification achieves > 90% correlation with human-expert "Playstyle" labels in test datasets.
+- **SC-003**: 100% of rosters in the platform database are assigned at least one Primary Archetype ID.
