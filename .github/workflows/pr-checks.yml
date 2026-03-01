@@ -94,8 +94,9 @@ jobs:
             fi
             
             # Basic content structure check in spec.md
-            if ! grep -q "^# Summary" "$DIR/spec.md"; then
-              echo "::error file=$DIR/spec.md::spec.md must contain a '# Summary' header"
+            # Accept either '# Summary' or '# Feature Specification:' as valid top-level headers
+            if ! grep -qE "^# (Summary|Feature Specification:)" "$DIR/spec.md"; then
+              echo "::error file=$DIR/spec.md::spec.md must contain a '# Summary' or '# Feature Specification:' header"
               exit 1
             fi
             
