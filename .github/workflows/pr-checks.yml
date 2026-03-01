@@ -23,7 +23,7 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --base . --verbose --no-progress './**/*.md'
+          args: --verbose --no-progress './**/*.md'
           fail: true
 
   spell-check:
