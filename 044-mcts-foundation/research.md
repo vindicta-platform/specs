@@ -77,7 +77,6 @@ def proximity_score(invalid_move, candidate_legal_move, cfg: ProximityScoreConfi
 
 **Implementation**: See `vindicta_engine/ai/mcts_config.py` for the full model with type annotations.
 
-
 - Spatial: Euclidean distance between target coordinates, normalized to board diagonal.
 - Phase: 0 if same phase, 1.0 if different.
 - Action Type: 0 if same (move→move), 0.5 if related (shoot→overwatch), 1.0 unrelated.
