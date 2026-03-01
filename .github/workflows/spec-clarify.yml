@@ -1,0 +1,93 @@
+name: Spec Clarification (Ollama)
+
+on:
+  pull_request:
+    paths:
+      - '**/spec.md'
+
+jobs:
+  clarify:
+    name: Headless Spec Clarify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          # Start ollama in background
+          ollama serve &
+          echo "Waiting for Ollama to start..."
+          until curl -s http://localhost:11434/api/tags > /dev/null; do sleep 1; done
+          echo "Ollama is up!"
+
+      - name: Pull Model
+        run: ollama pull mistral
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install requests
+
+      - name: Run Clarification Script
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python .agent/scripts/clarify_spec.py
+
+      - name: Check for Changes
+        id: git-check
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected."
+          fi
+
+      - name: Create Clarification PR
+        if: steps.git-check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          CLARIFIED_BRANCH="clarified/${HEAD_REF}"
+          
+          # Setup git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Create new branch
+          git checkout -b $CLARIFIED_BRANCH
+          git add .
+          git commit -m "docs: apply automated spec clarifications"
+          git push origin $CLARIFIED_BRANCH --force
+          
+          # Create PR against the original feature branch
+          NEW_PR_URL=$(gh pr create \
+            --base $HEAD_REF \
+            --head $CLARIFIED_BRANCH \
+            --title "Spec Clarifications for #${PR_NUMBER}" \
+            --body "This PR contains automated clarifications for the spec.md files modified in #${PR_NUMBER}. These clarifications were generated using local LLMs (Ollama/Mistral) following the speckit.clarify workflow." \
+            --label "automated-clarification")
+          
+          echo "NEW_PR_URL=$NEW_PR_URL" >> $GITHUB_ENV
+          
+          # Comment on the original PR
+          gh pr comment $PR_NUMBER --body "🤖 **Automated Spec Clarification**
+          
+          I've analyzed the changes to \`spec.md\` and identified some areas for refinement.
+          I've created a follow-up PR with suggested clarifications: $NEW_PR_URL
+          
+          Please review and merge if those resolutions look correct!"
