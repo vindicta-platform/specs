@@ -1,7 +1,7 @@
 # default markdownlint rules configuration
 default: true
 
-# Exclude line length restrictions (MD013)
+# Exclude line length restrictions (MD013), many auto-generated files have very long lines
 MD013: false
 
 # Exclude bare URLs (MD034)
