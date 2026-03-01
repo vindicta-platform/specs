@@ -1,0 +1,99 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: "**/*.md"
+
+  link-checker:
+    name: Link Checker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --base . --verbose --no-progress './**/*.md'
+          fail: true
+
+  spell-check:
+    name: Spell Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run CSpell
+        uses: streetsidesoftware/cspell-action@v6
+        with:
+          config: 'cspell.json'
+          files: '**/*.md'
+          check_dot_files: false
+          strict: false
+
+  pr-title-lint:
+    name: PR Title Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  spec-validator:
+    name: Spec Structure Validator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          cat changed_files.txt
+
+      - name: Validate New Specs
+        run: |
+          #!/bin/bash
+          set -e
+          
+          # Find all unique feature directories that have changes
+          DIRS=$(grep -oE '^[0-9]{3}-[^/]+' changed_files.txt | sort -u || true)
+          
+          if [ -z "$DIRS" ]; then
+            echo "No feature directories changed."
+            exit 0
+          fi
+          
+          for DIR in $DIRS; do
+            echo "Checking directory: $DIR"
+            
+            # Check for spec.md
+            if [ ! -f "$DIR/spec.md" ]; then
+              echo "::error file=$DIR/spec.md::Missing spec.md in $DIR"
+              exit 1
+            fi
+            
+            # Check for requirements checklist
+            if [ ! -f "$DIR/checklists/requirements.md" ]; then
+              echo "::error file=$DIR/checklists/requirements.md::Missing checklists/requirements.md in $DIR"
+              exit 1
+            fi
+            
+            # Basic content structure check in spec.md
+            if ! grep -q "^# Summary" "$DIR/spec.md"; then
+              echo "::error file=$DIR/spec.md::spec.md must contain a '# Summary' header"
+              exit 1
+            fi
+            
+            echo "✓ $DIR passed structural validation"
+          done

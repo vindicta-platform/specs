@@ -1,0 +1,19 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "words": [
+        "speckit",
+        "ollama",
+        "vindicta",
+        "warscribe",
+        "bfoxt",
+        "brandon",
+        "gisting",
+        "markdownlint"
+    ],
+    "ignorePaths": [
+        "node_modules",
+        ".git",
+        "dist"
+    ]
+}
