@@ -1,53 +1,26 @@
-# default markdownlint rules configuration
+# Markdownlint configuration for Vindicta Platform Specs
 default: true
 
-# Exclude line length restrictions (MD013), many auto-generated files have very long lines
+# Exclude line length restrictions (MD013) — spec content is often dense
 MD013: false
 
-# Exclude bare URLs (MD034)
+# Exclude bare URLs (MD034) — specs reference raw URLs in edge case descriptions
 MD034: false
 
-# Exclude first line must be heading (MD041), we often have comments or frontmatter
+# Exclude first line must be heading (MD041) — some files have frontmatter or comments
 MD041: false
 
-# Exclude blanks around headings (MD022), sometimes omitted in checklists
-MD022: false
-
-# Exclude blanks around lists (MD032)
-MD032: false
-
-# Exclude ordered list item prefix (MD029), often people use 1. 2. 3. or 1. 1. 1.
+# Exclude ordered list item prefix (MD029) — allow both sequential and all-ones style
 MD029: false
 
-# Exclude no trailing spaces (MD009), too aggressive for simple edits
-MD009: false
-
-# Exclude inconsistent indentation for list items (MD005)
-MD005: false
-
-# Exclude inline HTML (MD033)
+# Exclude inline HTML (MD033) — templates use HTML comments for instructions
 MD033: false
 
-# Exclude hard tabs (MD010), repomix output uses them
-MD010: false
-
-# Exclude blanks around fences (MD031), repomix output misses these
-MD031: false
-
-# Exclude fenced code block language specification (MD040), repomix output misses these
-MD040: false
-
-# Exclude unordered list indentation (MD007)
-MD007: false
-
-# Exclude heading levels should only increment by one level at a time (MD001)
-MD001: false
-
-# Exclude multiple headings with the same content (MD024)
+# Exclude multiple headings with the same content (MD024) — specs reuse section names
 MD024: false
 
-# Exclude dollar signs before commands without showing output (MD014)
+# Exclude dollar signs before commands (MD014) — used in code examples
 MD014: false
 
-# Exclude single title (MD025) since Spec Validator requires `# Summary`
+# Exclude single title/H1 (MD025) — spec validator handles header validation
 MD025: false
