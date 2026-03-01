@@ -1,0 +1,29 @@
+# default markdownlint rules configuration
+default: true
+
+# Exclude line length restrictions (MD013)
+MD013: false
+
+# Exclude bare URLs (MD034)
+MD034: false
+
+# Exclude first line must be heading (MD041), we often have comments or frontmatter
+MD041: false
+
+# Exclude blanks around headings (MD022), sometimes omitted in checklists
+MD022: false
+
+# Exclude blanks around lists (MD032)
+MD032: false
+
+# Exclude ordered list item prefix (MD029), often people use 1. 2. 3. or 1. 1. 1.
+MD029: false
+
+# Exclude no trailing spaces (MD009), too aggressive for simple edits
+MD009: false
+
+# Exclude inconsistent indentation for list items (MD005)
+MD005: false
+
+# Exclude inline HTML (MD033)
+MD033: false
