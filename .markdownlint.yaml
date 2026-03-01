@@ -48,3 +48,6 @@ MD024: false
 
 # Exclude dollar signs before commands without showing output (MD014)
 MD014: false
+
+# Exclude single title (MD025) since Spec Validator requires `# Summary`
+MD025: false
