@@ -1,0 +1,11 @@
+# Agent Rules: GitHub
+
+For all GitHub-related operations (Pull Requests, Issues, commits, repository status, searching, etc.):
+
+1. **Priority**: Use `github-mcp-server` tools (e.g., `mcp_github-mcp-server_create_pull_request`).
+2. **Fallback**: Use `gh` CLI commands via `run_command` (e.g., `gh pr create`) ONLY if:
+   - The MCP server is unavailable or fails.
+   - The specific feature is not available via MCP tools.
+3. **Local Sync**: Local `git` commands (local commit/branch/rebase) are still preferred for local file management, whereas MCP is for remote/GitHub-specific platform actions.
+
+Detailed rules found in: `.agent/rules.md` and `Vindicta Constitution (Principle VI)`.

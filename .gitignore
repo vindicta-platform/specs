@@ -56,11 +56,3 @@ js/bootstrap
 .vscode/
 .idea/
 
-# Speckiy
-/.specify
-
-# Agent
-/.agent
-
-# GitHub
-.github
