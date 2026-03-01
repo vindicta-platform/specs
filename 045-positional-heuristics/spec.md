@@ -1,43 +1,62 @@
-# Feature Specification: FEAT-045 Advanced Positional Evaluation Heuristics
+# Feature Specification: 045-positional-heuristics
 
 **Feature Branch**: `045-positional-heuristics`  
-**Created**: 2026-02-28  
+**Created**: 2026-03-01  
 **Status**: Draft  
-**Input**: User description: "Advance the logical stockfish setup and accuracy."
+**Input**: User description: "Core logic for calculating geometric positioning advantages."
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Threat Range Heatmaps (Priority: P1)
-As the AI evaluation engine, I want to calculate the overlapping threat ranges (movement + weapon range) of all units on the board, so that I can penalize my own pieces for standing in deadly areas.
-**Why this priority**: Raw "material" counts don't work in 40k; positioning is everything.
-**Independent Test**: Can be tested by placing a fragile unit in the open vs behind ruins and verifying the engine evaluation significantly prefers the hidden position.
+### User Story 1 - Flanking maneuvers Identification (Priority: P1)
+
+As a tactical analyst, I want the system to identify when a unit is "Flanked" or "Pincered" by two enemy units so that the AI or analytical engine can evaluate the severity of the threat correctly.
+
+**Why this priority**: Positional context (where a unit is relative to others) is what differentiates a "Game Engine" from a "Calculated Result Engine."
+
+**Independent Test**: Place a target model at (0,0). Place two enemies at (1,0) and (-1,0). Verify the heuristic engine identifies this as a "Pincer" state with a high structural vulnerability weighting.
 
 **Acceptance Scenarios**:
-1. **Given** an enemy unit with a 36" weapon, **When** the heuristic calculates board control, **Then** all tiles within 36" of that unit without obscuring terrain receive a negative control score.
 
-### User Story 2 - Objective Control Weighting (Priority: P2)
-As the evaluation engine, I need to weigh the presence of "Objective Secured" (OC) models near objective markers higher than models in empty space, so that the engine understands how to win the game.
-**Why this priority**: AI must prioritize scoring over merely killing.
-**Independent Test**: Can be tested by giving the engine a choice between killing a non-scoring unit or moving onto an objective. It must choose the objective if it changes the VP math.
+1. **Given** a unit's position and the orientation of all nearby enemies, **When** the heuristic calculator runs, **Then** it identifies and tags specific geometric states like "Encircled," "Screened," or "Flanked."
+
+---
+
+### User Story 2 - Objective Coverage Analysis (Priority: P2)
+
+As a player reviewing a replay, I want to see a value overlay showing which parts of the table were "Secure" vs "Contested" based on the threat ranges of my units, so I can see where my screen failed.
+
+**Why this priority**: Helps players visualize "Invisible Walls" created by high-threat units (e.g., massive ranged guns).
+
+**Independent Test**: Load a board state with a long-range artillery unit. Verify the heuristic renders a "High-Threat Radius" where any moving unit would be statistically likely to be deleted.
 
 **Acceptance Scenarios**:
-1. **Given** a choice to score 5 VP or destroy 100 points of enemy models, **When** evaluating the paths, **Then** the engine prefers the 5 VP if the ultimate game win probability is higher.
+
+1. **Given** an active match board, **When** the overlay is toggled, **Then** the engine renders semi-transparent zones of "Influence" where units have > 75% probability of successful engagement.
 
 ### Edge Cases
-- How are complex terrain traits (e.g., Ruins, Craters) digested by the heuristic? (Grid-based raycasting for Line of Sight checks).
+
+- What happens if a unit is in an "Impossible" position (e.g., inside solid terrain)? (Heuristic engine must flag a "Geometry Violation" rather than trying to calculate strategic value for an invalid state).
+- How handles "Hidden" or "Reserved" units? (Heuristics only consider "On-Board" entities; however, a "Reserved Threat" weight can be applied to deployment zones to reflect potential late-game arrivals).
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
-- **FR-001**: Heuristic function MUST calculate total OC per objective marker.
-- **FR-002**: Heuristic function MUST calculate expected damage output (Lethality) between all pairs of units with Line of Sight.
-- **FR-003**: Heuristic function MUST run in under 50ms to be viable within the MCTS inner loop.
+
+- **FR-001**: System MUST calculate geometric relationships (Distances, Angles) between all on-board game entities.
+- **FR-002**: System MUST identify and classify specific tactical archetypes (Pincer, Flank, Screen, Conga-line).
+- **FR-003**: System MUST assign a "Threat Weight" to table regions based on unit engagement ranges.
+- **FR-004**: System MUST provide a standardized API for raw positional data to be ingested by the MCTS foundation.
+- **FR-005**: System MUST identify "Critical Failure Points" in screening (holes large enough for an enemy base to fit through).
 
 ### Key Entities
-- **HeuristicWeights**: Configurable parameters dictating the relative value of Material vs Board Control vs VP.
+
+- **Geometric Context**: The relative spatial relationship of a unit to its allies, enemies, and terrain.
+- **Threat Radius**: The calculated 2D or 3D area where a unit can effectively apply its primary power.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
-- **SC-001**: Heuristic accurately predicts the winner of historical matches from turn 3 onwards in 85% of test cases.
-- **SC-002**: Function execution time averages < 50ms.
+
+- **SC-001**: Heuristic evaluation of a 50-unit board state completes in < 50 milliseconds.
+- **SC-002**: Identification of "Pincer" and "Flank" states matches human-expert designations in 95% of test scenarios.
+- **SC-003**: Screening-hole detection identifies gaps as small as the smallest possible base size (e.g., 25mm) with 100% accuracy.
