@@ -27,3 +27,24 @@ MD005: false
 
 # Exclude inline HTML (MD033)
 MD033: false
+
+# Exclude hard tabs (MD010), repomix output uses them
+MD010: false
+
+# Exclude blanks around fences (MD031), repomix output misses these
+MD031: false
+
+# Exclude fenced code block language specification (MD040), repomix output misses these
+MD040: false
+
+# Exclude unordered list indentation (MD007)
+MD007: false
+
+# Exclude heading levels should only increment by one level at a time (MD001)
+MD001: false
+
+# Exclude multiple headings with the same content (MD024)
+MD024: false
+
+# Exclude dollar signs before commands without showing output (MD014)
+MD014: false
