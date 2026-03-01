@@ -1,0 +1,7 @@
+040000 tree ca5e98adec6eac3709d3cfe597774bd149289f3d	.agent
+100644 blob 72897a32085bdc96ee0418c93fc8f3dab2cfbcc1	.gitignore
+040000 tree 87bc6eb6e127084aae779172b2b7223e3ace9227	038-archetype-id
+040000 tree 46685cbfb437ae91be1f6dd72a0ef6185d96c5e5	044-mcts-foundation
+040000 tree af0259e1d42d9c53c1e3fcb2c21575e2a5228521	045-positional-heuristics
+040000 tree fa0ca6f7b456c574d6a5e10d3d9d2a4fde61091d	046-roster-synergy
+040000 tree 13eb3dd22347f66d81ac797ef4d71d987950cce9	047-upset-detector

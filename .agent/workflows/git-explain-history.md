@@ -1,1 +1,5 @@
+---
+description: Explain git history
+---
+
 // Reference: https://raw.githubusercontent.com/vindicta-platform/.github/main/.agent/workflows/git-explain-history.md
