@@ -9,7 +9,13 @@
         "user",
         "brandon",
         "gisting",
-        "markdownlint"
+        "markdownlint",
+        "MCTS",
+        "dtype",
+        "Zobrist",
+        "backpropagation",
+        "pydantic",
+        "isclose"
     ],
     "ignorePaths": [
         "node_modules",
