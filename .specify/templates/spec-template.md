@@ -1,8 +1,8 @@
 # Feature Specification: [FEATURE NAME]
 
-**Feature Branch**: `[###-feature-name]`  
-**Created**: [DATE]  
-**Status**: Draft  
+**Feature Branch**: `[###-feature-name]`
+**Created**: [DATE]
+**Status**: Draft
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing *(mandatory)*
@@ -11,7 +11,7 @@
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -85,7 +85,7 @@
 ### Functional Requirements
 
 - **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
+- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
@@ -99,6 +99,28 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+## Non-Functional Requirements
+
+<!--
+  ACTION REQUIRED: Define constraints beyond functional behavior.
+  These should be measurable and technology-agnostic.
+-->
+
+### Performance
+
+- **NFR-001**: [Response time target, e.g., "API responses complete within 200ms at p95"]
+- **NFR-002**: [Throughput target, e.g., "System supports 1000 concurrent users"]
+
+### Security
+
+- **NFR-003**: [Security constraint, e.g., "All PII must be encrypted at rest and in transit"]
+- **NFR-004**: [Access control, e.g., "Role-based access with least-privilege defaults"]
+
+### Reliability
+
+- **NFR-005**: [Availability target, e.g., "99.9% uptime during business hours"]
+- **NFR-006**: [Recovery target, e.g., "Data recovery within 1 hour of failure"]
 
 ## Success Criteria *(mandatory)*
 

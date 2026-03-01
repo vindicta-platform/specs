@@ -15,7 +15,20 @@
         "Zobrist",
         "backpropagation",
         "pydantic",
-        "isclose"
+        "isclose",
+        "archetype",
+        "battlescribe",
+        "scorekeeping",
+        "heatmap",
+        "heatmaps",
+        "gameplay",
+        "metagame",
+        "matchmaking",
+        "leaderboard",
+        "leaderboards",
+        "scraper",
+        "streamer",
+        "streamers"
     ],
     "ignorePaths": [
         "node_modules",
