@@ -5,6 +5,9 @@
 **Status**: Draft  
 **Input**: User description: "Advance the logical stockfish setup and accuracy."
 
+# Summary
+This specification defines the foundation for the Monte Carlo Tree Search (MCTS) engine, which acts as the core AI for evaluating game states and selecting optimal moves, similar to Stockfish in chess. It outlines the requirements for board state evaluation, move generation, and integration with the Entropy Buffer.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Board State Evaluation (Priority: P1)
