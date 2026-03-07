@@ -1,0 +1,133 @@
+name: Spec Readiness Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '*/spec.md'
+  workflow_dispatch:
+
+concurrency:
+  group: spec-readiness-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: Validate Spec Completeness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed specs
+        id: detect
+        run: |
+          SPECS=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep 'spec\.md$' || true)
+          if [ -z "$SPECS" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$SPECS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check required sections
+        if: steps.detect.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Required H2 sections based on spec template
+            const requiredSections = [
+              'Overview',
+              'Context',
+              'Functional Requirements',
+              'Non-Functional Requirements',
+              'User Stories',
+              'Acceptance Criteria'
+            ];
+
+            const optionalSections = [
+              'Edge Cases',
+              'Clarifications',
+              'Dependencies',
+              'Open Questions'
+            ];
+
+            const files = `${{ steps.detect.outputs.files }}`.trim().split('\n');
+            let allPass = true;
+            let report = '### \ud83d\udccb Spec Readiness Gate\n\n';
+
+            for (const file of files) {
+              if (!fs.existsSync(file)) continue;
+              const content = fs.readFileSync(file, 'utf8');
+              const feature = file.replace('/spec.md', '');
+
+              report += `**\`${feature}\`:**\n\n`;
+              report += '| Section | Status |\n|---------|:------:|\n';
+
+              let missing = 0;
+              for (const section of requiredSections) {
+                // Check for H2 with similar name (case-insensitive, fuzzy)
+                const pattern = new RegExp(`^##\\s+.*${section.replace(/\s+/g, '.*')}`, 'im');
+                if (pattern.test(content)) {
+                  report += `| ${section} | \u2705 |\n`;
+                } else {
+                  report += `| ${section} | \u274c **MISSING** |\n`;
+                  missing++;
+                  allPass = false;
+                }
+              }
+
+              for (const section of optionalSections) {
+                const pattern = new RegExp(`^##\\s+.*${section.replace(/\s+/g, '.*')}`, 'im');
+                if (pattern.test(content)) {
+                  report += `| ${section} | \u2705 |\n`;
+                } else {
+                  report += `| ${section} | \u2796 (optional) |\n`;
+                }
+              }
+
+              report += `\n`;
+              if (missing > 0) {
+                report += `\u274c **${missing} required section(s) missing**\n\n`;
+              } else {
+                report += `\u2705 All required sections present\n\n`;
+              }
+            }
+
+            // Post on PR
+            if (context.payload.pull_request) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              const existing = comments.find(c =>
+                c.body.includes('Spec Readiness Gate') && c.user.login === 'github-actions[bot]'
+              );
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  comment_id: existing.id, body: report
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: context.issue.number, body: report
+                });
+              }
+            }
+
+            core.summary.addRaw(report);
+            await core.summary.write();
+
+            if (!allPass) {
+              core.setFailed('Spec is missing required sections');
+            }
