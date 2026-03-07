@@ -44,11 +44,44 @@ As the engine, I need to generate all legal moves (movement, shooting targets, c
 - **FR-001**: The Engine MUST accept a standardized GameState and output an EvaluationScore.
 - **FR-002**: The Engine MUST implement Monte Carlo Tree Search with configurable depth and time constraints.
 - **FR-003**: The Engine MUST interface with the Entropy Buffer to evaluate expected values of dice rolls, rather than simulating every possible raw die outcome branching.
+- **FR-004**: The Engine MUST utilize a pre-allocated Arena Allocator for memory management.
+- **FR-005**: The Engine MUST provide structured observability traces (NONE/BASIC/PV/FULL).
+- **FR-006**: The Engine MUST return computation metrics (time, nodes) for upstream economy metering.
+- **FR-007**: Architecture MUST be documented via an ADR in the platform's central decision record.
+- **FR-008**: The Engine MUST validate GameState input for Turn Range (1-5) and payload size limit.
 
 ### Key Entities
 
 - **GameState**: The mathematical representation of the board, units, and scores.
 - **SearchNode**: A node in the MCTS tree representing a potential future state.
+
+## Clarifications
+
+### Session 2026-03-07 (Automated)
+
+- Q: What is the structure of the GameState entity and its fields? → A: `turn_number`, `active_player`, `unit_positions`, `unit_state_flags`, and `vp_scores`
+- Q: What is the structure of the SearchNode entity and its fields? → A: `id`, `parent_id`, `children`, `state_hash`, `move_causing_state`, `visits`, `value_sum`, and `is_terminal_node`
+- Q: How does the engine handle infinitely looping board states or mathematically intractable numbers of permutations? → A: Implement aggressive alpha-beta pruning and hard time limits per search node
+- Q: What is the structure of the unit tests for move generation validation? → A: Unit tests with structured test cases that cover edge cases like Deep Strike and Engagement contours
+- Q: What is the structure of the unit tests for mid-game evaluation? → A: Unit tests with structured test cases that cover mid-game scenarios (e.g., Turn 4, 20 VP lead, dominant board control) to verify the engine returns a >90% win probability
+
+#### Detail
+
+- **Data Model** (Missing): What is the structure of the GameState entity and its fields?
+  - **Answer**: `turn_number`, `active_player`, `unit_positions`, `unit_state_flags`, and `vp_scores`
+  - **Rationale**: Defining the structure of the GameState is essential to understanding the inputs and outputs of the MCTS Engine.
+- **Data Model** (Missing): What is the structure of the SearchNode entity and its fields?
+  - **Answer**: `id`, `parent_id`, `children`, `state_hash`, `move_causing_state`, `visits`, `value_sum`, and `is_terminal_node`
+  - **Rationale**: Understanding the structure of SearchNodes is crucial for developing the MCTS algorithm and understanding the tree representation.
+- **Edge Case** (Partial): How does the engine handle infinitely looping board states or mathematically intractable numbers of permutations?
+  - **Answer**: Implement aggressive alpha-beta pruning and hard time limits per search node
+  - **Rationale**: Handling such situations prevents the engine from getting stuck in infinite loops or becoming computationally expensive.
+- **Testing** (Missing): What is the structure of the unit tests for move generation validation?
+  - **Answer**: Unit tests with structured test cases that cover edge cases like Deep Strike and Engagement contours
+  - **Rationale**: Ensuring the engine generates legal moves in all scenarios is critical for the accuracy of the MCTS algorithm.
+- **Testing** (Missing): What is the structure of the unit tests for mid-game evaluation?
+  - **Answer**: Unit tests with structured test cases that cover mid-game scenarios (e.g., Turn 4, 20 VP lead, dominant board control) to verify the engine returns a >90% win probability
+  - **Rationale**: Ensuring the engine evaluates game states correctly is essential for the accuracy of the MCTS algorithm.
 
 ## Success Criteria *(mandatory)*
 
