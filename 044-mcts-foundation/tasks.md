@@ -196,19 +196,23 @@
 ### Parallel Opportunities
 
 #### Phase 1 (Setup)
+
 - T003, T004, T005 can all run in parallel (different files)
 
 #### Phase 2 (Foundational)
+
 - T006, T007, T008 can all run in parallel [P] (independent models, same file is safe since each is a separate class definition)
 - T012 can run in parallel with T010, T011 (different files)
 - T013, T014, T015, T016 can all run in parallel (different test files/sections)
 - T017a, T017b can run in parallel with other foundational tasks (FR-008 validation)
 
 #### Phase 3 (US1) & Phase 4 (US2) — can run in parallel
+
 - T018, T019, T019a, T020, T020a can run in parallel (different test focus areas)
 - T029, T030, T031, T032, T033, T034 can all run in parallel (all in test_generator.py but independent test cases)
 
 #### Phase 5 (Polish)
+
 - T042, T043, T044, T046, T047, T048b, T049 can all run in parallel
 
 ---

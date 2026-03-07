@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed mentions of SQLite and vector store specifically - replaced with abstract persistent models.

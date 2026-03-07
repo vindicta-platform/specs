@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed specifics on LLM parameters; focused on the business logic of AI analysis.

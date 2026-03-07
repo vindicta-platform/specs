@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Verified streaming operations are framed contextually without strict protocol (WebSocket) demands.

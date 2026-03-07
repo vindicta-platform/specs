@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Abstracted the speech-to-intent logic; focused on the business outcome of "hands-free logging".

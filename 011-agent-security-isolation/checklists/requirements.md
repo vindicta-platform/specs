@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed Docker/chroot specifics; defined purely by "environment isolation boundaries."
