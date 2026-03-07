@@ -117,12 +117,15 @@ def scan_spec(
     if template_path.exists():
         template_str = template_path.read_text(encoding="utf-8")
 
-    # 2. Load sibling feature files for cross-repo / feature context
+    # 2. Load sibling feature files (Exclude downstream artifacts)
     sibling_context = ""
     for sibling in spec_path.parent.glob("*.md"):
-        if sibling.name != "spec.md":
+        if sibling.name not in ("spec.md", "plan.md", "tasks.md"):
             try:
                 content = sibling.read_text(encoding="utf-8")
+                # Truncate to avoid overloading the context window
+                if len(content) > 2000:
+                    content = content[:2000] + "\n... (truncated)"
                 sibling_context += f"--- {sibling.name} ---\n{content}\n\n"
             except Exception:
                 pass
@@ -139,7 +142,7 @@ def scan_spec(
         === SPECIFICATION TEMPLATE ===
         {template_str}
         
-        === SIBLING FEATURE CONTEXT (For Cross-Repo / Cross-File Consistency) ===
+        === ADDITIONAL FEATURE CONTEXT ===
         {sibling_context}
         
         Based on these workflow boundaries, evaluate if the spec is ambiguous or requires clarification.
@@ -147,7 +150,8 @@ def scan_spec(
         1. Be answerable with a short answer (<=5 words) or a choice from 2-5 options.
         2. Materially impact architecture, data modeling, or test design.
         3. Include your RECOMMENDED answer based on best practices.
-        4. MUST NOT contradict any existing assumptions, examples, or requirements in the spec or sibling files. Align with existing scoring scales, formats, and architecture patterns.
+        4. MUST NOT contradict any existing assumptions, examples, or requirements in the spec itself. Pay critical attention to existing metrics, scoring scales, or values in Acceptance Criteria, and assure your recommendations align perfectly with them.
+
         
         CRITICAL: Return ONLY a valid JSON array. No prose before or after.
         Each object must have exactly these fields:
