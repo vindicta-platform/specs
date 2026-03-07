@@ -1,48 +1,47 @@
-name: Speckit Full Pipeline
+name: Speckit Pipeline
 
 on:
-  push:
-    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
     paths:
-      - '*/spec.md'
+      - '**/spec.md'
   workflow_dispatch:
     inputs:
       feature_dir:
-        description: 'Feature directory name (e.g., 044-mcts-foundation)'
+        description: 'Feature directory (e.g., 001-ocr-parser)'
         required: true
         type: string
-
-concurrency:
-  group: speckit-pipeline-${{ github.ref }}
-  cancel-in-progress: false
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
-  pipeline:
-    name: Speckit Clarify → Plan → Tasks
+  speckit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
+          ref: ${{ github.head_ref || github.ref }}
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - uses: astral-sh/setup-uv@v5
-
-      - name: Install dependencies
-        run: uv sync --all-extras 2>/dev/null || uv sync 2>/dev/null || true
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Cache Ollama models
         uses: actions/cache@v4
         with:
           path: ~/.ollama
-          key: ${{ runner.os }}-ollama-phi3
+          key: ${{ runner.os }}-ollama-mistral
           restore-keys: |
             ${{ runner.os }}-ollama-
 
@@ -51,87 +50,27 @@ jobs:
           curl -fsSL https://ollama.com/install.sh | sh
           ollama serve &
           sleep 5
-          ollama pull phi3 || true
+          ollama pull mistral || true
 
-      - name: Detect changed spec
+      - name: Detect changed spec files
         id: detect
+        env:
+          INPUT_FEATURE_DIR: ${{ inputs.feature_dir }}
+          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [ -n "${{ inputs.feature_dir }}" ]; then
-            FEATURE_DIR="${{ inputs.feature_dir }}"
+          if [ -n "${INPUT_FEATURE_DIR}" ]; then
+            echo "feature_dir=${INPUT_FEATURE_DIR}" >> "$GITHUB_OUTPUT"
           else
-            FEATURE_DIR=$(git diff --name-only HEAD~1 HEAD | grep 'spec.md' | head -1 | xargs dirname 2>/dev/null || echo "")
-          fi
-          if [ -z "$FEATURE_DIR" ]; then
-            echo "::notice::No spec.md changes detected, skipping pipeline"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "feature_dir=${FEATURE_DIR}" >> $GITHUB_OUTPUT
-            echo "skip=false" >> $GITHUB_OUTPUT
-            echo "### 🏗️ Speckit Pipeline: ${FEATURE_DIR}" >> $GITHUB_STEP_SUMMARY
+            CHANGED=$(git diff --name-only origin/main...HEAD -- '**/spec.md' | head -1 | xargs dirname 2>/dev/null || echo '')
+            echo "feature_dir=$CHANGED" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run Clarify
-        if: steps.detect.outputs.skip == 'false'
-        run: |
-          echo "🔍 Running clarify for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_clarify.py" ]; then
-            uv run python scripts/speckit_clarify.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Clarify complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
-          fi
+      - name: Run Speckit Clarify
+        if: steps.detect.outputs.feature_dir != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Run Plan
-        if: steps.detect.outputs.skip == 'false'
+          CHANGED_SPECS: ${{ steps.detect.outputs.feature_dir }}/spec.md
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          echo "📋 Running plan for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_plan.py" ]; then
-            uv run python scripts/speckit_plan.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Plan complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_plan.py not found, skipping" >> $GITHUB_STEP_SUMMARY
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Run Tasks
-        if: steps.detect.outputs.skip == 'false'
-        run: |
-          echo "📝 Running tasks for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_tasks.py" ]; then
-            uv run python scripts/speckit_tasks.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Tasks complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_tasks.py not found, skipping" >> $GITHUB_STEP_SUMMARY
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Create PR with generated artifacts
-        if: steps.detect.outputs.skip == 'false'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "speckit: auto-generate pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"
-          title: "speckit: pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"
-          body: |
-            ## 🏗️ Speckit Pipeline Artifacts
-
-            Auto-generated clarifications, plan, and tasks for `${{ steps.detect.outputs.feature_dir }}`.
-
-            **Pipeline steps:**
-            - [x] Clarify (extended_clarifications.md)
-            - [x] Plan (plan.md)
-            - [x] Tasks (tasks.md)
-
-            Please review the generated artifacts for accuracy and completeness.
-          branch: speckit/pipeline-${{ steps.detect.outputs.feature_dir }}
-          labels: |
-            speckit
-            automated
-          delete-branch: true
+          uv run --with PyGithub --with ollama python scripts/speckit_clarify.py
