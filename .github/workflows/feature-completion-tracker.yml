@@ -1,0 +1,92 @@
+name: Feature Completion Tracker
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '*/tasks.md'
+  workflow_dispatch:
+
+concurrency:
+  group: feature-tracker
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  track:
+    name: Calculate Feature Progress
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan tasks.md files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const { execSync } = require('child_process');
+
+            // Find all tasks.md files
+            const taskFiles = execSync('find . -name tasks.md -not -path ./.git', { encoding: 'utf8' })
+              .trim().split('\n').filter(Boolean);
+
+            let report = '# \ud83d\udcca Feature Completion Dashboard\n\n';
+            report += '| Feature | Total | Done | In Progress | Remaining | % |\n';
+            report += '|---------|:-----:|:----:|:-----------:|:---------:|:--:|\n';
+
+            let orgTotal = 0, orgDone = 0;
+
+            for (const taskFile of taskFiles) {
+              const feature = path.dirname(taskFile).replace('./', '');
+              const content = fs.readFileSync(taskFile, 'utf8');
+
+              // Count task markers
+              const total = (content.match(/^\s*-\s*\[/gm) || []).length;
+              const done = (content.match(/^\s*-\s*\[x\]/gm) || []).length;
+              const inProgress = (content.match(/^\s*-\s*\[\/\]/gm) || []).length;
+              const remaining = total - done - inProgress;
+
+              if (total === 0) continue;
+
+              const pct = Math.round((done / total) * 100);
+              const bar = pct >= 80 ? '\ud83d\udfe2' : pct >= 40 ? '\ud83d\udfe1' : '\ud83d\udd34';
+
+              report += `| ${feature} | ${total} | ${done} | ${inProgress} | ${remaining} | ${bar} ${pct}% |\n`;
+              orgTotal += total;
+              orgDone += done;
+            }
+
+            if (orgTotal > 0) {
+              const orgPct = Math.round((orgDone / orgTotal) * 100);
+              report += `| **TOTAL** | **${orgTotal}** | **${orgDone}** | | | **${orgPct}%** |\n`;
+            }
+
+            report += `\n_Updated: ${new Date().toISOString().slice(0, 16)}Z_\n`;
+
+            // Upsert dashboard issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              labels: 'automated', state: 'open'
+            });
+            const existing = issues.find(i => i.title.includes('Feature Completion'));
+            const title = '\ud83d\udcca Feature Completion Dashboard';
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body: report
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body: report, labels: ['automated']
+              });
+            }
+
+            core.summary.addRaw(report);
+            await core.summary.write();
