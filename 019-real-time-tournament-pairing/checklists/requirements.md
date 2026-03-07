@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Emphasized Swiss/Round-robin algorithm support requirement.

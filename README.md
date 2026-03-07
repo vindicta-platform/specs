@@ -19,7 +19,7 @@ NNN-feature-name/    # Feature specification directories (001–047)
 Features are numbered sequentially with a three-digit prefix (`001`–`047`). Each directory contains:
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | `spec.md` | Behavioral specification with user stories, requirements, and success criteria |
 | `checklists/requirements.md` | Quality gate checklist validated before planning |
 

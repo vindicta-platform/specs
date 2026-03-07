@@ -22,7 +22,7 @@ Implement a Monte Carlo Tree Search (MCTS) Engine to evaluate Warhammer 40k boar
 ### Key Definitions
 
 | Term | Definition |
-|------|-----------|
+| --- | --- |
 | **Depth 3** | 3 full-ply: each ply = one complete phase-sequential action set for one player |
 | **Principal Variation** | The ordered sequence of best moves (phase-actions) from root to the deepest evaluated leaf, analogous to chess PV but representing 40k phase sequences |
 | **Standard Hardware** | 4-core CPU (x86_64 or ARM64), ≥2.5 GHz, 4GB RAM container, no GPU |
@@ -109,9 +109,8 @@ vindicta-foundation/
 │           ├── mcts.py           # GameState, SearchNode, MCTSResult, HeuristicConfig
 │           └── entropy.py        # EntropyBufferProtocol, AttackProfile, StubEntropyBuffer
 
-docs/
-└── architecture/
-    └── mcts_engine.md            # FR-007 deliverable (7 required sections)
+docs/architecture/adr/
+└── 0010-mcts-engine-foundation.md # FR-007 deliverable (7 required sections)
 ```
 
 **Structure Decision**: The MCTS Engine will live as a submodule within `vindicta-engine` (`src/vindicta_engine/mcts/`), as it heavily relies on the domain logic. Domain models representing the state (`GameState`, `SearchNode`, `MCTSResult`, `HeuristicConfig`) will be defined in `vindicta-foundation/models/` to preserve cross-package transportability.
@@ -119,7 +118,7 @@ docs/
 ## Dependencies & Cross-Repo Build
 
 | Dependency | Repo | Status | Strategy |
-|-----------|------|--------|----------|
+| --- | --- | --- | --- |
 | `VindictaModel` base class | `vindicta-foundation` | ✅ Available | Import directly |
 | Entropy Buffer API | `vindicta-foundation` | ⚠️ Future | Use `StubEntropyBuffer` with JSON fixtures |
 | Core game rules | `vindicta-engine` | ✅ Available | Call directly; Cython subset deferred to Phase 2 |
@@ -131,7 +130,7 @@ docs/
 ## Complexity & Risk Tracker
 
 | Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
+| --- | --- | --- | --- |
 | NumPy arena slower than needed | Medium | High | Benchmark at 1,000-node test; fallback to Cython |
 | Branching factor exceeds estimates | Medium | High | Progressive unpruning + aggressive forward pruning |
 | Entropy Buffer unavailable | High | Medium | StubEntropyBuffer with static JSON fixtures |
@@ -141,7 +140,7 @@ docs/
 ## Acceptance Scenario Traceability
 
 | Requirement | Traced To |
-|-------------|-----------|
+| --- | --- |
 | FR-001 | US1 Acceptance Scenario, SC-001 |
 | FR-002 | US1 Acceptance Scenario (depth/time params), SC-001 |
 | FR-003 | Research §12 (Entropy Buffer Interface) |

@@ -30,6 +30,7 @@ SEARCH_NODE_DTYPE = np.dtype([
 **Note on COW vs Pool Coexistence**: Copy-on-write (COW) immutability (from data-model.md) applies to `GameState` objects — each tree expansion creates a new, immutable snapshot of the board. Arena pooling applies to `SearchNode` structural metadata (visit counts, child pointers, hashes). These are separate concerns: `GameState` is never mutated in-place, while `SearchNode` slots are reused from the pre-allocated pool. `SearchNode` fields like `visits` and `value_sum` are updated in-place during backpropagation since they are pool-managed structural counters, not domain state.
 
 **Alternatives considered**:
+
 - Native Python GC instantiation: Rejected due to OOM risk and GC jitter.
 - C++ Extension bindings: High maintenance overhead; deferred unless Python pooling fails performance targets.
 
@@ -124,6 +125,7 @@ class MCTSTracer:
 **Decision**: Use Zobrist Hashing with pre-generated 64-bit random constants.
 
 **Generation Strategy**:
+
 ```python
 # Generated once at module load, seeded deterministically for reproducibility
 ZOBRIST_SEED = 0xDEADBEEF_44000000  # Feature-specific seed
@@ -223,23 +225,27 @@ class MockEntropyBuffer:
 **Context**: SC-001 requires Depth 3 in 5 seconds. We need to quantify the Nodes-Per-Second (NPS) target.
 
 **Branching Factor Analysis** (40k with cluster-based movement + pruning):
+
 - Movement: ~8 meaningful positions per unit
 - Shooting: ~4 target priority options per unit
 - Charge: ~3 options (charge, don't, overwatch)
 - With progressive unpruning, effective branching factor: **~15-25 moves per node**
 
 **NPS Target**:
+
 - Worst case Depth 3 tree: 25^3 = 15,625 nodes
 - With pruning + transpositions: ~5,000-8,000 unique nodes
 - Required NPS: **≥2,000 nodes/second** (gives 10,000 nodes in 5s with safety margin)
 - Target NPS with NumPy vectorization: **5,000+ nodes/second**
 
 **Adaptive Time Budget**:
+
 - Reserve 250ms safety buffer (4,750ms effective search time)
 - Check `time.monotonic()` every 100 node expansions
 - If 90% of budget consumed: stop deepening, return best result at current depth
 
 **Hardware Baseline** ("standard hardware"):
+
 - **CPU**: 4-core x86_64 or ARM64, ≥2.5 GHz (e.g., AWS t3.medium / Graviton3 equivalent)
 - **RAM**: 4GB container limit
 - **No GPU**: CPU-only evaluation
@@ -249,11 +255,13 @@ class MockEntropyBuffer:
 **Context**: Multiple `evaluate_state` calls may arrive simultaneously. Root Parallelism requires clear thread-safety boundaries.
 
 **Decision**:
+
 - Each `MCTSEngine` instance owns **one arena buffer** and is **NOT thread-safe** internally.
 - Concurrency is handled at the **service layer**: each incoming request gets its own `MCTSEngine` instance (or is queued to a worker pool of pre-initialized engines).
 - Root Parallelism (4 threads) operates **within** a single `evaluate_state` call using `multiprocessing.Pool` (avoids GIL). Each worker gets a slice of the arena.
 
 **Determinism Guarantee**: Root Parallelism produces deterministic results by:
+
 1. Splitting the arena into N fixed slices (not random).
 2. Merging results by selecting the child with the highest visit count across all workers.
 3. Using the same RNG seed per worker (worker_seed = base_seed + worker_id).
@@ -265,7 +273,7 @@ class MockEntropyBuffer:
 **Defined Edge Cases for Move Generator** (SC-002 scope):
 
 | ID | Edge Case | Expected Behavior |
-|----|-----------|-------------------|
+| --- | --- | --- |
 | EC-001 | Unit in Engagement Range | Only generates: Fall Back, Remain Stationary, Fight |
 | EC-002 | Deep Strike arrival (Turn 1) | Blocked: no Deep Strike on Turn 1 |
 | EC-003 | Deep Strike placement (<9" from enemy) | Rejected: minimum distance violation |
@@ -289,6 +297,7 @@ class MockEntropyBuffer:
 **Context**: Maliciously crafted payloads must not crash or hang the engine.
 
 **Decision**:
+
 - **Max payload size**: 2MB for JSON (reject with HTTP 413 at gateway)
 - **Max nested depth**: 10 levels (enforced by `pydantic` model validators)
 - **Max units per state**: 200 (reject states with more)
@@ -334,6 +343,7 @@ class AttackProfile:
 **Context**: FR-007 requires architecture documentation in `docs/architecture/mcts_engine.md`.
 
 **Required Sections**:
+
 1. **Overview** — Purpose, position in the Vindicta ecosystem
 2. **Architecture Diagram** — C4 Component-level showing Engine ↔ Foundation ↔ Oracle
 3. **Arena Allocator Internals** — Memory layout, sizing, eviction strategy

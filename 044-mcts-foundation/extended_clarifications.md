@@ -1,10 +1,11 @@
 # Extended Clarifications: FEAT-044 MCTS Engine Foundation
 
-The following 100 questions span 20 distinct categories regarding the architecture, integration, and operational constraints of the MCTS Engine within the broader `vindicta-platform-testing` ecosystem. 
+The following 100 questions span 20 distinct categories regarding the architecture, integration, and operational constraints of the MCTS Engine within the broader `vindicta-platform-testing` ecosystem.
 
 For each, please provide a short answer or select an option to guide the technical planning.
 
 ## 1. GameState Representation (Data Model)
+
 1. **Encoding**: How are unit properties and locations explicitly encoded in memory (e.g., bitboards, struct arrays, entity-component)?
    - **Options**:
      - A) Bitboards (High efficiency, requires complex bitmasking logic)
@@ -41,6 +42,7 @@ For each, please provide a short answer or select an option to guide the technic
    - **Recommended**: Option B - Statically attaching flags during a "Snapshot Refresh" phase significantly speeds up playout evaluations.
 
 ## 2. Move Generation Logic
+
 6. **Laziness**: Are child moves generated lazily (on demand per expanded node) or eagerly (all at once per state)?
    - **Options**:
      - A) Lazy (Lower memory, slower leaf expansion)
@@ -76,6 +78,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Real branches for success/failure are essential for risk-assessment logic in MCTS.
 
 ## 3. MCTS Node Expansion & Selection
+
 11. **UCT Formula**: What variant of the Upper Confidence Bound applied to Trees (UCT) formula will govern node selection?
     - **Options**:
       - A) Standard UCT1 (Exploration vs Exploitation balance)
@@ -111,6 +114,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Prevents the AI from "shuffling" or delaying a win when an immediate advantage is available.
 
 ## 4. Entropy Buffer Integration
+
 16. **Expectation Strategy**: How are results derived from the Entropy Buffer (mean averages vs distribution sampling per rollout)?
     - **Options**:
       - A) Mean Average (Deterministic, fast, but "boring" play)
@@ -147,6 +151,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Caching the Top 500 most common dice interactions (e.g., 20 S4 shots into T4) is the best performance win.
 
 ## 5. Evaluation Heuristics (Static Evaluation)
+
 21. **Scoring Weights**: What is the relative weight ratio between VP lead, Material advantage, and Positional control?
     - **Options**:
       - A) Material Dominant (Kill everything first)
@@ -182,6 +187,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Since secondaries are highly specific (e.g., "Behind Enemy Lines"), they require explicit sub-logic.
 
 ## 6. Time Management & Search Constraints
+
 26. **Budget Distribution**: How does the engine distribute the 5-second budget across iterative deepening phases?
     - **Options**:
       - A) Fixed % (e.g., 20% for Depth 1, 30% for Depth 2, 50% for Depth 3)
@@ -211,10 +217,11 @@ For each, please provide a short answer or select an option to guide the technic
     - **Options**:
       - A) Return Result (Stop and save the computation cost)
       - B) Iterative Deepening (Proceed to Depth 4+ until time runs out)
-     - C) Statistical Softening (Use remaining time to run more rollouts on current leaves)
+      - C) Statistical Softening (Use remaining time to run more rollouts on current leaves)
     - **Recommended**: Option B - If time remains, deeper search is always better for accuracy.
 
 ## 7. Concurrency & Parallelization
+
 31. **Threading Model**: Does the search employ Root Parallelism, Leaf Parallelism, or Tree Parallelism?
     - **Options**:
       - A) Root Parallelism (Run N independent trees, merge results at end - easiest)
@@ -250,6 +257,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Determinism is a strict requirement for `vindicta-platform` to ensure audit trails and repeatable tests.
 
 ## 8. Pruning & Tree Reduction
+
 36. **Forward Pruning**: Is Forward Pruning aggressively applied to moves with historically low immediate payouts?
     - **Options**:
       - A) Yes (Only consider Top N most promising moves)
@@ -284,6 +292,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Pruning extreme outliers keeps the tree representation sane and focused on realistic outcomes.
 
 ## 9. Observability, Tracing, and Logging
+
 41. **Trace Format**: What industry-standard format is used for exported traces (OpenTelemetry, JSON logs)?
     - **Options**:
       - A) OpenTelemetry (OTLP) (Native support for Jaeger/Grafana)
@@ -319,6 +328,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Seven days allows for retroactive post-mortem analysis of failed game sessions.
 
 ## 10. Hardware & Resource Limits
+
 46. **Hardware Acceleration**: Are neural network evaluations (if added later) explicitly targeted for CPU or GPU hardware?
     - **Options**:
       - A) CPU Only (Focus on vectorized AVX/SIMD instructions)
@@ -355,6 +365,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - The codebase should be multi-arch, but ARM64 is the preferred production target for cost.
 
 ## 11. Integration with `vindicta-engine` (Core Logic)
+
 51. **Logic Duplication**: Does MCTS duplicate `vindicta-engine`'s rules internally for speed, or call the module directly?
     - **Options**:
       - A) Call Directly (Maintainable, slower)
@@ -390,6 +401,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - MCTS logic is inextricably tied to the exact rules version and point values.
 
 ## 12. Integration with `vindicta-oracle` (RAG / Rules)
+
 56. **Live Queries**: Can the MCTS proactively query the Oracle during evaluation for unknown edge case rulings?
     - **Options**:
       - A) Yes (Synchronous RAG during search - extremely slow)
@@ -424,6 +436,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Allows automated analysis of which "Rules Interpretations" lead to the highest win rates.
 
 ## 13. Integration with `Vindicta-Agents`
+
 61. **Personality Bias**: Do Agents pass "personality" parameter weights into the MCTS to bias certain playstyles (aggressive vs defensive)?
     - **Options**:
       - A) Yes (Heuristic weights are passed in the request header)
@@ -458,6 +471,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - Standard socket-level interruption is the cleanest for microservice architectures.
 
 ## 14. Integration with `vindicta-economy`
+
 66. **Compute Bounding**: Is the total MCTS search depth bounded dynamically by a user's Gas Tank / token balance?
     - **Options**:
       - A) Yes (Depth is capped based on prepaid tokens)
@@ -491,6 +505,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Providing shallow "Sanity Checks" for free improves the ecosystem's developer experience.
 
 ## 15. Integration with `warscribe-system`
+
 71. **Output Notation**: Is the resulting Principal Variation (best line of play) automatically translated back into standard Warscribe notation?
     - **Options**:
       - A) Yes (Engine includes a `notation` field in response)
@@ -522,6 +537,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Structured sequence IDs are necessary for multi-phase verification.
 
 ## 16. Integration with `vindicta-platform` (Backend API)
+
 76. **Microservice Topology**: Does the Engine run as an isolated pod communicating via gRPC, or an embedded library?
     - **Options**:
       - A) Isolated Pod (gRPC/Protobuf)
@@ -556,6 +572,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Mandatory for any task that takes >1 second to prevent gateway timeouts.
 
 ## 17. Simulation & Self-Play Infrastructure
+
 81. **Heuristic Tuning**: Does the ecosystem support the Engine playing against itself internally to automatically tune heuristics?
     - **Options**:
       - A) Yes (Continuous self-play loop)
@@ -589,6 +606,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Standard practice to prevent "strategy collapse" or overfitting.
 
 ## 18. Testing Strategy & Determinism
+
 86. **Strict Determinism**: Must the MCTS engine guarantee 100% deterministic output trees given a fixed integer seed?
     - **Options**:
       - A) Yes (Mandatory for regression testing)
@@ -622,6 +640,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Essential for the core math modules as per `TDD_SKILL.md`.
 
 ## 19. Security, Cheating, and Sandboxing
+
 91. **Payload Sanitization**: Could a maliciously crafted JSON GameState payload force the engine into an infinite parsing loop?
     - **Options**:
       - A) Yes (If recursive parser is used without depth limits)
@@ -655,6 +674,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - Tying compute strictly to the `Gas Tank` economy naturally limits abuse.
 
 ## 20. Frontend & `vindicta-platform.github.io`
+
 96. **Visual Overlays**: Does the single-page web frontend render MCTS evaluations visually (e.g., win probability bar graphs)?
     - **Options**:
       - A) Yes (Live-updating charts)

@@ -44,6 +44,11 @@ As the engine, I need to generate all legal moves (movement, shooting targets, c
 - **FR-001**: The Engine MUST accept a standardized GameState and output an EvaluationScore.
 - **FR-002**: The Engine MUST implement Monte Carlo Tree Search with configurable depth and time constraints.
 - **FR-003**: The Engine MUST interface with the Entropy Buffer to evaluate expected values of dice rolls, rather than simulating every possible raw die outcome branching.
+- **FR-004**: The Engine MUST utilize a pre-allocated Arena Allocator for memory management.
+- **FR-005**: The Engine MUST provide structured observability traces (NONE/BASIC/PV/FULL).
+- **FR-006**: The Engine MUST return computation metrics (time, nodes) for upstream economy metering.
+- **FR-007**: Architecture MUST be documented via an ADR in the platform's central decision record.
+- **FR-008**: The Engine MUST validate GameState input for Turn Range (1-5) and payload size limit.
 
 ### Key Entities
 
