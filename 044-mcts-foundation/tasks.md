@@ -1,4 +1,7 @@
-# Tasks: FEAT-044 MCTS Engine Foundation
+# Tasks: FEAT-044 MCTS Engine Foundation (PAUSED)
+
+> [!IMPORTANT]
+> This task is currently **PAUSED** per ADL directive (2026-03-07) to prioritize the organization-wide CI template rollout.
 
 **Input**: Design documents from `/specs/044-mcts-foundation/`
 **Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, contracts/engine-api.md ✅, quickstart.md ✅, checklists/ ✅
@@ -26,7 +29,7 @@
 
 **Purpose**: Project initialization, dependency wiring, and skeleton module structure
 
-- [ ] T001 Create MCTS module directory structure in `vindicta-engine/src/vindicta_engine/mcts/` with `__init__.py`, `engine.py`, `arena.py`, `heuristics.py`, `generator.py`, `config.py`
+- [ ] T001 Create MCTS module directory structure in `vindicta-engine/src/vindicta_engine/mcts/` with `__init__.py`, `engine.py`, `arena.py`, `heuristics.py`, `generator.py`, `config.py`, `zobrist.py`, `move_stack.py`, `tracer.py`, `exceptions.py`
 - [ ] T002 Create MCTS test directory structure in `vindicta-engine/tests/mcts/` with `__init__.py`, `test_engine.py`, `test_arena.py`, `test_generator.py`, `test_heuristics.py`, `conftest.py`
 - [ ] T002a [P] Initialize BDD structure in `vindicta-engine/tests/features/` with `steps/` directory and `environment.py` (Constitution §III SDD→BDD→TDD mandate)
 - [ ] T003 [P] Add MCTS-specific dependencies to `vindicta-engine/pyproject.toml` (ensure `vindicta-foundation` workspace dependency, `pytest`, `pytest-cov`, `mypy` dev deps)
@@ -56,6 +59,11 @@
 ### Observability Infrastructure
 
 - [ ] T012 [P] Implement `MCTSTracer` class in `vindicta-engine/src/vindicta_engine/mcts/tracer.py` with trace level support: `NONE` (no-op), `BASIC` (tracks `nodes_visited`, `cache_hits`, `time_elapsed`), `PV` (captures principal variation list), `FULL` (dumps arena buffer state to JSON lines). Include `start_search()`, `record_node()`, `record_pv()`, `finish_search() -> str | None` methods (per Research §3, FR-005)
+
+### State & Undo Logic (vindicta-engine)
+
+- [ ] T012c [US1] Implement Zobrist hashing for GameState in `vindicta_engine/mcts/zobrist.py` to enable efficient transposition table lookups.
+- [ ] T012d [US1] Implement `MoveStack` and `MoveDelta` in `vindicta_engine/mcts/move_stack.py` to support efficient board state rollbacks during search.
 
 ### BDD Acceptance Scenarios (MANDATORY — SDD → BDD → TDD)
 
@@ -149,7 +157,7 @@
 
 **Purpose**: Documentation, observability integration, type safety, and final quality gates
 
-- [x] T042 [P] Create feature architecture documentation at `vindicta-engine/docs/architecture/mcts_engine.md` with 7 required sections: (1) Algorithmic Overview (MCTS four-phase loop), (2) Arena Allocator Mechanics (pooling, capacity thresholds, exhaustion behavior), (3) Heuristic Evaluation Strategy (weighted factors, Entropy Buffer), (4) Move Generator Design (phase logic, clamp_move), (5) Trace Level Behaviors (NONE/BASIC/PV/FULL), (6) Performance Budget (NPS targets, time slicing), (7) Extension Points (future Cython, Root Parallelism) — per FR-007
+- [ ] T042 [P] Create Architectural Decision Record at `docs/architecture/adr/0010-mcts-engine-foundation.md` with 7 required sections: (1) Algorithmic Overview (MCTS four-phase loop), (2) Arena Allocator Mechanics (pooling, capacity thresholds, exhaustion behavior), (3) Heuristic Evaluation Strategy (weighted factors, Entropy Buffer), (4) Move Generator Design (phase logic, clamp_move), (5) Trace Level Behaviors (NONE/BASIC/PV/FULL), (6) Performance Budget (NPS targets, time slicing), (7) Extension Points (future Cython, Root Parallelism) — per FR-007
 - [ ] T043 [P] Run `mypy --strict` on `vindicta-engine/src/vindicta_engine/mcts/` and fix all type errors (Constitution §III)
 - [ ] T044 [P] Run `ruff check .` and `ruff format --check .` on both `vindicta-engine/` and `vindicta-foundation/` and fix all lint/format violations (Constitution §III)
 - [ ] T045 Run `pytest --cov=vindicta_engine.mcts --cov-report=term-missing` and verify ≥90% coverage on all MCTS modules. Add missing tests to close any coverage gaps (Constitution §III, Spec §Clarifications)
