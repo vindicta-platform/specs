@@ -19,7 +19,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import ollama  # type: ignore[import-untyped]
-from github import Github  # type: ignore[import-untyped]
+from github import Auth, Github  # type: ignore[import-untyped]
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -30,37 +30,6 @@ log = logging.getLogger(__name__)
 
 MODEL = os.environ.get("SPECKIT_MODEL", "mistral")
 MAX_QUESTIONS = 5
-
-TAXONOMY = [
-    "Core user goals & success criteria",
-    "Explicit out-of-scope declarations",
-    "User roles / personas differentiation",
-    "Entities, attributes, relationships",
-    "Identity & uniqueness rules",
-    "Lifecycle / state transitions",
-    "Data volume / scale assumptions",
-    "Critical user journeys / sequences",
-    "Error / empty / loading states",
-    "Accessibility or localization notes",
-    "Performance targets (latency, throughput)",
-    "Scalability expectations",
-    "Reliability & availability targets",
-    "Observability (logging, metrics, tracing)",
-    "Security & privacy (authN/Z, data protection)",
-    "Compliance / regulatory constraints",
-    "External services / APIs and failure modes",
-    "Data import / export formats",
-    "Protocol / versioning assumptions",
-    "Negative scenarios / edge cases",
-    "Rate limiting / throttling",
-    "Conflict resolution (concurrent edits)",
-    "Technical constraints (language, storage, hosting)",
-    "Explicit tradeoffs or rejected alternatives",
-    "Canonical glossary terms",
-    "Acceptance criteria testability",
-    "TODO markers / unresolved decisions",
-    "Ambiguous adjectives lacking quantification",
-]
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -129,33 +98,64 @@ def _extract_json_array(raw: str) -> list[dict[str, str]] | None:
     return None
 
 
-def scan_spec(spec_content: str, max_retries: int = 2) -> list[dict[str, str]]:
-    """Scan a spec for ambiguities using the taxonomy and return questions."""
+def scan_spec(
+    spec_path: Path, spec_content: str, max_retries: int = 2
+) -> list[dict[str, str]]:
+    """Scan a spec for ambiguities using the `.specify` workflow files and sibling context."""
+
+    # 1. Load root context (.specify)
+    repo_root = spec_path.parent.parent
+    specify_dir = repo_root / ".specify"
+
+    constitution = ""
+    constitution_path = specify_dir / "memory" / "constitution.md"
+    if constitution_path.exists():
+        constitution = constitution_path.read_text(encoding="utf-8")
+
+    template_str = ""
+    template_path = specify_dir / "templates" / "spec-template.md"
+    if template_path.exists():
+        template_str = template_path.read_text(encoding="utf-8")
+
+    # 2. Load sibling feature files for cross-repo / feature context
+    sibling_context = ""
+    for sibling in spec_path.parent.glob("*.md"):
+        if sibling.name != "spec.md":
+            try:
+                content = sibling.read_text(encoding="utf-8")
+                sibling_context += f"--- {sibling.name} ---\n{content}\n\n"
+            except Exception:
+                pass
+
     prompt = dedent(f"""\
         You are a specification analyst. Analyze the following feature specification
-        for ambiguities, missing information, and underspecified areas.
-
-        Use this taxonomy of categories to evaluate:
-        {json.dumps(TAXONOMY, indent=2)}
-
-        For each category, determine if the spec has:
-        - Clear: Well-defined, no ambiguity
-        - Partial: Some information but incomplete
-        - Missing: No information at all
-
-        Based on Partial and Missing categories, generate up to {MAX_QUESTIONS}
-        clarification questions. Each question MUST:
-        1. Be answerable with a short answer (<=5 words) or a choice from 2-5 options
-        2. Materially impact architecture, data modeling, or test design
-        3. Include your RECOMMENDED answer based on best practices
-
+        for ambiguities, missing information, underspecified areas, or contradictions.
+        
+        Rely on the following project context and workflow files to evaluate the spec:
+        
+        === PROJECT CONSTITUTION ===
+        {constitution}
+        
+        === SPECIFICATION TEMPLATE ===
+        {template_str}
+        
+        === SIBLING FEATURE CONTEXT (For Cross-Repo / Cross-File Consistency) ===
+        {sibling_context}
+        
+        Based on these workflow boundaries, evaluate if the spec is ambiguous or requires clarification.
+        Generate up to {MAX_QUESTIONS} clarification questions. Each question MUST:
+        1. Be answerable with a short answer (<=5 words) or a choice from 2-5 options.
+        2. Materially impact architecture, data modeling, or test design.
+        3. Include your RECOMMENDED answer based on best practices.
+        4. MUST NOT contradict any existing assumptions, examples, or requirements in the spec or sibling files. Align with existing scoring scales, formats, and architecture patterns.
+        
         CRITICAL: Return ONLY a valid JSON array. No prose before or after.
         Each object must have exactly these fields:
-        - "category": string (taxonomy category name)
+        - "category": string (e.g., "Data Model", "Scoring Logic", "Edge Case")
         - "status": string ("Partial" or "Missing")
         - "question": string (the clarification question)
         - "recommended_answer": string (your recommendation)
-        - "reasoning": string (1-2 sentences why)
+        - "reasoning": string (1-2 sentences explaining why the clarity matters)
 
         If no meaningful ambiguities exist, return: []
 
@@ -191,7 +191,6 @@ def scan_spec(spec_content: str, max_retries: int = 2) -> list[dict[str, str]]:
 
     log.error("All %d scan attempts failed to produce valid JSON", max_retries)
     return []
-
 
 
 def apply_clarifications(
@@ -332,7 +331,7 @@ def create_branch_and_pr(
 
         ### What happened
 
-        - Scanned the spec against the speckit taxonomy ({len(TAXONOMY)} categories)
+        - Scanned the spec against project workflows, constitution, and cross-repo context
         - Identified **{num_questions}** areas needing clarification
         - Auto-accepted best-practice recommendations from local Ollama model
         - Applied clarifications to the spec
@@ -390,7 +389,7 @@ def main() -> None:
         log.error("GITHUB_REPOSITORY not set")
         sys.exit(1)
 
-    gh = Github(token)
+    gh = Github(auth=Auth.Token(token))
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     spec_paths = [s.strip() for s in changed_specs.split(",") if s.strip()]
 
@@ -411,13 +410,11 @@ def main() -> None:
 
         # Step 1: Scan for ambiguities
         log.info("Scanning spec for ambiguities...")
-        questions = scan_spec(spec_content)
+        questions = scan_spec(path, spec_content)
 
         if not questions:
             log.info("No critical ambiguities detected in %s. Skipping.", feature_dir)
-            results.append(
-                {"feature": feature_dir, "questions": 0, "status": "clean"}
-            )
+            results.append({"feature": feature_dir, "questions": 0, "status": "clean"})
             continue
 
         log.info("Found %d clarification(s) for %s", len(questions), feature_dir)
@@ -437,7 +434,11 @@ def main() -> None:
         if updated_content == spec_content:
             log.warning("No changes produced for %s. Skipping PR.", feature_dir)
             results.append(
-                {"feature": feature_dir, "questions": len(questions), "status": "no_diff"}
+                {
+                    "feature": feature_dir,
+                    "questions": len(questions),
+                    "status": "no_diff",
+                }
             )
             continue
 
@@ -481,7 +482,9 @@ def main() -> None:
         comment_body += "The following specs were automatically analyzed and clarification PRs created:\n\n"
         for r in pr_results:
             comment_body += f"- **{r['feature']}**: {r['questions']} clarification(s) → {r['pr_url']}\n"
-        comment_body += "\n> Generated by speckit-clarify workflow using local Ollama models."
+        comment_body += (
+            "\n> Generated by speckit-clarify workflow using local Ollama models."
+        )
 
         try:
             commit = repo.get_commit(commit_sha)
