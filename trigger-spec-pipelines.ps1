@@ -6,9 +6,9 @@ $specDirs = Get-ChildItem -Directory -Filter "0*" | Select-Object -ExpandPropert
 foreach ($spec in $specDirs) {
     if (Test-Path "$spec\spec.md") {
         Write-Host "Triggering speckit-pipeline for $spec..."
-        gh workflow run speckit-pipeline.yml -f feature_dir="$spec"
+        gh workflow run speckit-pipeline.yml --ref chore/pipeline-automation -f feature_dir="$spec"
         # Small delay to prevent API rate limiting
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 1
     } else {
         Write-Host "Skipping $spec (No spec.md found)."
     }
