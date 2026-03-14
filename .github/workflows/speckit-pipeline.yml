@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   pipeline:
-    name: Speckit Clarify → Plan → Tasks
+    name: "Speckit Clarify \u2192 Plan \u2192 Tasks"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,9 +55,11 @@ jobs:
 
       - name: Detect changed spec
         id: detect
+        env:
+          FEATURE_INPUT: ${{ inputs.feature_dir }}
         run: |
-          if [ -n "${{ inputs.feature_dir }}" ]; then
-            FEATURE_DIR="${{ inputs.feature_dir }}"
+          if [ -n "$FEATURE_INPUT" ]; then
+            FEATURE_DIR="$FEATURE_INPUT"
           else
             FEATURE_DIR=$(git diff --name-only HEAD~1 HEAD | grep 'spec.md' | head -1 | xargs dirname 2>/dev/null || echo "")
           fi

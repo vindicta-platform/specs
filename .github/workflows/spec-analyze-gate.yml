@@ -56,9 +56,11 @@ jobs:
 
       - name: Detect changed feature dirs
         id: detect
+        env:
+          FEATURE_INPUT: ${{ inputs.feature_dir }}
         run: |
-          if [ -n "${{ inputs.feature_dir }}" ]; then
-            echo "dirs=${{ inputs.feature_dir }}" >> $GITHUB_OUTPUT
+          if [ -n "$FEATURE_INPUT" ]; then
+            echo "dirs=$FEATURE_INPUT" >> $GITHUB_OUTPUT
           else
             DIRS=$(git diff --name-only HEAD~1 HEAD | grep -E '(spec|plan|tasks)\.md$' | xargs -I{} dirname {} | sort -u | paste -sd ',' -)
             if [ -z "$DIRS" ]; then
