@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   pipeline:
-    name: Speckit Clarify → Plan → Tasks
+    name: Speckit Clarify / Plan / Tasks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: uv sync --all-extras 2>/dev/null || uv sync 2>/dev/null || true
+        run: |
+          uv sync --all-extras || uv sync
 
       - name: Cache Ollama models
         uses: actions/cache@v4
@@ -67,67 +68,107 @@ jobs:
           else
             echo "feature_dir=${FEATURE_DIR}" >> $GITHUB_OUTPUT
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "### 🏗️ Speckit Pipeline: ${FEATURE_DIR}" >> $GITHUB_STEP_SUMMARY
+            echo "### Speckit Pipeline: ${FEATURE_DIR}" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Run Clarify
+        id: clarify
         if: steps.detect.outputs.skip == 'false'
         run: |
-          echo "🔍 Running clarify for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_clarify.py" ]; then
-            uv run python scripts/speckit_clarify.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Clarify complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+          FEATURE_DIR="${{ steps.detect.outputs.feature_dir }}"
+          echo "Running clarify for ${FEATURE_DIR}..." >> $GITHUB_STEP_SUMMARY
+          if [ ! -f "scripts/speckit_clarify.py" ]; then
+            echo "::warning::speckit_clarify.py not found, skipping clarify step"
+            echo "speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+            echo "success=skipped" >> $GITHUB_OUTPUT
+            exit 0
           fi
+          uv run python scripts/speckit_clarify.py --feature "${FEATURE_DIR}" 2>&1 | tail -20
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "Clarify complete" >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
       - name: Run Plan
+        id: plan
         if: steps.detect.outputs.skip == 'false'
         run: |
-          echo "📋 Running plan for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_plan.py" ]; then
-            uv run python scripts/speckit_plan.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Plan complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_plan.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+          FEATURE_DIR="${{ steps.detect.outputs.feature_dir }}"
+          echo "Running plan for ${FEATURE_DIR}..." >> $GITHUB_STEP_SUMMARY
+          if [ ! -f "scripts/speckit_plan.py" ]; then
+            echo "::error::speckit_plan.py not found -- pipeline cannot generate plan artifacts"
+            echo "success=false" >> $GITHUB_OUTPUT
+            exit 1
           fi
+          uv run python scripts/speckit_plan.py --feature "${FEATURE_DIR}" 2>&1 | tail -20
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "Plan complete" >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
       - name: Run Tasks
-        if: steps.detect.outputs.skip == 'false'
+        id: tasks
+        if: steps.detect.outputs.skip == 'false' && steps.plan.outputs.success == 'true'
         run: |
-          echo "📝 Running tasks for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_tasks.py" ]; then
-            uv run python scripts/speckit_tasks.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Tasks complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_tasks.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+          FEATURE_DIR="${{ steps.detect.outputs.feature_dir }}"
+          echo "Running tasks for ${FEATURE_DIR}..." >> $GITHUB_STEP_SUMMARY
+          if [ ! -f "scripts/speckit_tasks.py" ]; then
+            echo "::error::speckit_tasks.py not found -- pipeline cannot generate task artifacts"
+            echo "success=false" >> $GITHUB_OUTPUT
+            exit 1
           fi
+          uv run python scripts/speckit_tasks.py --feature "${FEATURE_DIR}" 2>&1 | tail -20
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "Tasks complete" >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+
+      - name: Verify generated artifacts
+        id: verify
+        if: steps.detect.outputs.skip == 'false'
+        run: |
+          FEATURE_DIR="${{ steps.detect.outputs.feature_dir }}"
+          PLAN_OK=false
+          TASKS_OK=false
+
+          if [ -f "${FEATURE_DIR}/plan.md" ]; then
+            PLAN_OK=true
+            echo "plan.md generated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "plan.md NOT generated" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f "${FEATURE_DIR}/tasks.md" ]; then
+            TASKS_OK=true
+            echo "tasks.md generated" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "tasks.md NOT generated" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$PLAN_OK" = "true" ] || [ "$TASKS_OK" = "true" ]; then
+            echo "has_artifacts=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_artifacts=false" >> $GITHUB_OUTPUT
+            echo "::warning::No artifacts were generated -- skipping PR creation"
+          fi
+          echo "plan_ok=$PLAN_OK" >> $GITHUB_OUTPUT
+          echo "tasks_ok=$TASKS_OK" >> $GITHUB_OUTPUT
 
       - name: Create PR with generated artifacts
-        if: steps.detect.outputs.skip == 'false'
+        if: steps.detect.outputs.skip == 'false' && steps.verify.outputs.has_artifacts == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "speckit: auto-generate pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"
           title: "speckit: pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"
           body: |
-            ## 🏗️ Speckit Pipeline Artifacts
+            ## Speckit Pipeline Artifacts
 
-            Auto-generated clarifications, plan, and tasks for `${{ steps.detect.outputs.feature_dir }}`.
+            Auto-generated artifacts for `${{ steps.detect.outputs.feature_dir }}`.
 
             **Pipeline steps:**
-            - [x] Clarify (extended_clarifications.md)
-            - [x] Plan (plan.md)
-            - [x] Tasks (tasks.md)
+            - [${{ steps.verify.outputs.plan_ok == 'true' && 'x' || ' ' }}] Plan (plan.md)
+            - [${{ steps.verify.outputs.tasks_ok == 'true' && 'x' || ' ' }}] Tasks (tasks.md)
 
             Please review the generated artifacts for accuracy and completeness.
           branch: speckit/pipeline-${{ steps.detect.outputs.feature_dir }}
