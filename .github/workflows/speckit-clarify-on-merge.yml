@@ -29,9 +29,11 @@ jobs:
 
       - name: Detect changed spec files
         id: detect
+        env:
+          FEATURE_INPUT: ${{ inputs.feature_dir }}
         run: |
-          if [ -n "${{ inputs.feature_dir }}" ]; then
-            echo "specs=${{ inputs.feature_dir }}/spec.md" >> "$GITHUB_OUTPUT"
+          if [ -n "$FEATURE_INPUT" ]; then
+            echo "specs=${FEATURE_INPUT}/spec.md" >> "$GITHUB_OUTPUT"
           else
             CHANGED=$(git diff --name-only HEAD~1 HEAD -- '**/spec.md' | tr '\n' ',' | sed 's/,$//')
             echo "specs=$CHANGED" >> "$GITHUB_OUTPUT"
