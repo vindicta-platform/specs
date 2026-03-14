@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 010-agent-persistence-layer
+﻿# Specification Quality Checklist: 010-agent-persistence-layer
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed mentions of SQLite and vector store specifically - replaced with abstract persistent models.

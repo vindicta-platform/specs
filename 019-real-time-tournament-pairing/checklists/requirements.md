@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 019-real-time-tournament-pairing
+﻿# Specification Quality Checklist: 019-real-time-tournament-pairing
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Emphasized Swiss/Round-robin algorithm support requirement.

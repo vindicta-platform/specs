@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 014-economy-management-engine
+﻿# Specification Quality Checklist: 014-economy-management-engine
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed specific mentions of SQL atomic transactions; replaced with abstract "atomic distribution".

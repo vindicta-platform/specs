@@ -1,71 +1,73 @@
-# Extended Clarifications: FEAT-044 MCTS Engine Foundation
+﻿# Extended Clarifications: FEAT-044 MCTS Engine Foundation
 
-The following 100 questions span 20 distinct categories regarding the architecture, integration, and operational constraints of the MCTS Engine within the broader `vindicta-platform-testing` ecosystem. 
+The following 100 questions span 20 distinct categories regarding the architecture, integration, and operational constraints of the MCTS Engine within the broader `vindicta-platform-testing` ecosystem.
 
 For each, please provide a short answer or select an option to guide the technical planning.
 
 ## 1. GameState Representation (Data Model)
+
 1. **Encoding**: How are unit properties and locations explicitly encoded in memory (e.g., bitboards, struct arrays, entity-component)?
    - **Options**:
-     - A) Bitboards (High efficiency, requires complex bitmasking logic)
-     - B) Typed NumPy Arrays / Struct Arrays (Fast attribute access, easy vectorization)
-     - C) Pydantic/VindictaModel classes (High abstraction, slower for high-frequency tree nodes)
+    - A) Bitboards (High efficiency, requires complex bitmasking logic)
+    - B) Typed NumPy Arrays / Struct Arrays (Fast attribute access, easy vectorization)
+    - C) Pydantic/VindictaModel classes (High abstraction, slower for high-frequency tree nodes)
    - **Recommended**: Option B - NumPy arrays offer a balance of Python-native readability and near-C performance for state snapshots.
 
 2. **Hidden Information**: Is the board state passed to the MCTS fully observable, or are hidden secondary objectives obfuscated?
    - **Options**:
-     - A) Fully Observable (Standard MCTS, simpler implementation)
-     - B) Partially Observable (Information Set MCTS, handles fog-of-war/hidden cards)
-     - C) Cheating AI (AI sees all, but pretends not to)
+    - A) Fully Observable (Standard MCTS, simpler implementation)
+    - B) Partially Observable (Information Set MCTS, handles fog-of-war/hidden cards)
+    - C) Cheating AI (AI sees all, but pretends not to)
    - **Recommended**: Option A - For a foundation layer, perfect information simplifies the search; hidden info can be modeled as "expected value" branches later.
 
 3. **Serialization**: What serialization format is used for network transfer of GameStates (e.g., JSON, Protocol Buffers, FlatBuffers)?
    - **Options**:
-     - A) JSON (Human readable, high overhead)
-     - B) Protocol Buffers (Compact, fast, typed)
-     - C) FlatBuffers (Zero-copy, fastest but more complex schema management)
+    - A) JSON (Human readable, high overhead)
+    - B) Protocol Buffers (Compact, fast, typed)
+    - C) FlatBuffers (Zero-copy, fastest but more complex schema management)
    - **Recommended**: Option B - Protobuf provides the best middle ground for the `vindicta-platform` microservice mesh.
 
 4. **Terrain**: How is 3D terrain conceptually represented in the mathematical snapshot to calculate line-of-sight efficiently?
    - **Options**:
-     - A) Voxel Grid (High precision, memory intensive)
-     - B) 2D Heightmap + Obstacle Polygons (Simpler LoS math)
-     - C) Abstract Keyword Tags (e.g., "Obscuring") with simplified bounding boxes
+    - A) Voxel Grid (High precision, memory intensive)
+    - B) 2D Heightmap + Obstacle Polygons (Simpler LoS math)
+    - C) Abstract Keyword Tags (e.g., "Obscuring") with simplified bounding boxes
    - **Recommended**: Option C - Standardizing on "Obscuring" / "Cover" tags aligns with the core game engine logic rules.
 
 5. **Aura Effects**: Are aura effects computed dynamically during evaluation, or are they statically attached as state flags per unit?
    - **Options**:
-     - A) Dynamic (Computed on-demand, always accurate)
-     - B) Static Flags (Pre-calculated at start of phase/turn, faster but risk of staleness)
-     - C) Incremental (Updated only when a unit moves)
+    - A) Dynamic (Computed on-demand, always accurate)
+    - B) Static Flags (Pre-calculated at start of phase/turn, faster but risk of staleness)
+    - C) Incremental (Updated only when a unit moves)
    - **Recommended**: Option B - Statically attaching flags during a "Snapshot Refresh" phase significantly speeds up playout evaluations.
 
 ## 2. Move Generation Logic
+
 6. **Laziness**: Are child moves generated lazily (on demand per expanded node) or eagerly (all at once per state)?
    - **Options**:
-     - A) Lazy (Lower memory, slower leaf expansion)
-     - B) Eager (Faster search, higher memory usage per node)
+    - A) Lazy (Lower memory, slower leaf expansion)
+    - B) Eager (Faster search, higher memory usage per node)
    - **Recommended**: Option A - For Depth 3+, lazy expansion prevents generating thousands of unused move branches for low-probability nodes.
 
 7. **Compound Actions**: How are compound action sequences (e.g., move, then shoot, then charge) segmented into decision nodes?
    - **Options**:
-     - A) Flattened (All permutations are siblings at one depth)
-     - B) Phase-Sequential (Move node -> Shoot node -> Charge node)
-     - C) Action Bundling (Agents submit an "Entire Turn Plan" as one branch)
+    - A) Flattened (All permutations are siblings at one depth)
+    - B) Phase-Sequential (Move node -> Shoot node -> Charge node)
+    - C) Action Bundling (Agents submit an "Entire Turn Plan" as one branch)
    - **Recommended**: Option B - Multi-step sequential nodes better represent the reactive nature of stratagems and dice outcomes.
 
 8. **Measurements**: How does the generator handle continuous distances (e.g., 6" move) in a discrete search tree?
    - **Options**:
-     - A) Discretized Grid (Move 1, 2, 3... inches)
-     - B) Cardinal Directions (Fixed point navigation)
-     - C) Cluster-Based (Only generate moves to "meaningful" objective or cover zones)
+    - A) Discretized Grid (Move 1, 2, 3... inches)
+    - B) Cardinal Directions (Fixed point navigation)
+    - C) Cluster-Based (Only generate moves to "meaningful" objective or cover zones)
    - **Recommended**: Option C - Moving to "points of interest" reduces the branching factor from infinite to manageable.
 
 9. **Stratagems**: Are CP usage and reactive stratagems considered standard "moves" in the tree?
    - **Options**:
-     - A) Yes (Full decision tree including resource management)
-     - B) No (Stratagems are handled by a separate heuristic "override" layer)
-     - C) Dynamic Pruning (Only include critical CP moves like "Interrupt")
+    - A) Yes (Full decision tree including resource management)
+    - B) No (Stratagems are handled by a separate heuristic "override" layer)
+    - C) Dynamic Pruning (Only include critical CP moves like "Interrupt")
    - **Recommended**: Option C - Pruning CP usage to only high-impact actions keeps the breadth manageable.
 
 10. **Fail States**: How are "Fail" scenarios (e.g., a failed 9" charge) mapped to branch continuations?
@@ -76,6 +78,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Real branches for success/failure are essential for risk-assessment logic in MCTS.
 
 ## 3. MCTS Node Expansion & Selection
+
 11. **UCT Formula**: What variant of the Upper Confidence Bound applied to Trees (UCT) formula will govern node selection?
     - **Options**:
       - A) Standard UCT1 (Exploration vs Exploitation balance)
@@ -111,6 +114,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Prevents the AI from "shuffling" or delaying a win when an immediate advantage is available.
 
 ## 4. Entropy Buffer Integration
+
 16. **Expectation Strategy**: How are results derived from the Entropy Buffer (mean averages vs distribution sampling per rollout)?
     - **Options**:
       - A) Mean Average (Deterministic, fast, but "boring" play)
@@ -147,6 +151,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Caching the Top 500 most common dice interactions (e.g., 20 S4 shots into T4) is the best performance win.
 
 ## 5. Evaluation Heuristics (Static Evaluation)
+
 21. **Scoring Weights**: What is the relative weight ratio between VP lead, Material advantage, and Positional control?
     - **Options**:
       - A) Material Dominant (Kill everything first)
@@ -182,6 +187,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Since secondaries are highly specific (e.g., "Behind Enemy Lines"), they require explicit sub-logic.
 
 ## 6. Time Management & Search Constraints
+
 26. **Budget Distribution**: How does the engine distribute the 5-second budget across iterative deepening phases?
     - **Options**:
       - A) Fixed % (e.g., 20% for Depth 1, 30% for Depth 2, 50% for Depth 3)
@@ -211,10 +217,11 @@ For each, please provide a short answer or select an option to guide the technic
     - **Options**:
       - A) Return Result (Stop and save the computation cost)
       - B) Iterative Deepening (Proceed to Depth 4+ until time runs out)
-     - C) Statistical Softening (Use remaining time to run more rollouts on current leaves)
+    - C) Statistical Softening (Use remaining time to run more rollouts on current leaves)
     - **Recommended**: Option B - If time remains, deeper search is always better for accuracy.
 
 ## 7. Concurrency & Parallelization
+
 31. **Threading Model**: Does the search employ Root Parallelism, Leaf Parallelism, or Tree Parallelism?
     - **Options**:
       - A) Root Parallelism (Run N independent trees, merge results at end - easiest)
@@ -250,6 +257,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Determinism is a strict requirement for `vindicta-platform` to ensure audit trails and repeatable tests.
 
 ## 8. Pruning & Tree Reduction
+
 36. **Forward Pruning**: Is Forward Pruning aggressively applied to moves with historically low immediate payouts?
     - **Options**:
       - A) Yes (Only consider Top N most promising moves)
@@ -284,6 +292,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Pruning extreme outliers keeps the tree representation sane and focused on realistic outcomes.
 
 ## 9. Observability, Tracing, and Logging
+
 41. **Trace Format**: What industry-standard format is used for exported traces (OpenTelemetry, JSON logs)?
     - **Options**:
       - A) OpenTelemetry (OTLP) (Native support for Jaeger/Grafana)
@@ -319,6 +328,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Seven days allows for retroactive post-mortem analysis of failed game sessions.
 
 ## 10. Hardware & Resource Limits
+
 46. **Hardware Acceleration**: Are neural network evaluations (if added later) explicitly targeted for CPU or GPU hardware?
     - **Options**:
       - A) CPU Only (Focus on vectorized AVX/SIMD instructions)
@@ -355,6 +365,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - The codebase should be multi-arch, but ARM64 is the preferred production target for cost.
 
 ## 11. Integration with `vindicta-engine` (Core Logic)
+
 51. **Logic Duplication**: Does MCTS duplicate `vindicta-engine`'s rules internally for speed, or call the module directly?
     - **Options**:
       - A) Call Directly (Maintainable, slower)
@@ -390,6 +401,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - MCTS logic is inextricably tied to the exact rules version and point values.
 
 ## 12. Integration with `vindicta-oracle` (RAG / Rules)
+
 56. **Live Queries**: Can the MCTS proactively query the Oracle during evaluation for unknown edge case rulings?
     - **Options**:
       - A) Yes (Synchronous RAG during search - extremely slow)
@@ -424,6 +436,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Allows automated analysis of which "Rules Interpretations" lead to the highest win rates.
 
 ## 13. Integration with `Vindicta-Agents`
+
 61. **Personality Bias**: Do Agents pass "personality" parameter weights into the MCTS to bias certain playstyles (aggressive vs defensive)?
     - **Options**:
       - A) Yes (Heuristic weights are passed in the request header)
@@ -458,6 +471,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - Standard socket-level interruption is the cleanest for microservice architectures.
 
 ## 14. Integration with `vindicta-economy`
+
 66. **Compute Bounding**: Is the total MCTS search depth bounded dynamically by a user's Gas Tank / token balance?
     - **Options**:
       - A) Yes (Depth is capped based on prepaid tokens)
@@ -491,6 +505,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Providing shallow "Sanity Checks" for free improves the ecosystem's developer experience.
 
 ## 15. Integration with `warscribe-system`
+
 71. **Output Notation**: Is the resulting Principal Variation (best line of play) automatically translated back into standard Warscribe notation?
     - **Options**:
       - A) Yes (Engine includes a `notation` field in response)
@@ -522,6 +537,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option A - Structured sequence IDs are necessary for multi-phase verification.
 
 ## 16. Integration with `vindicta-platform` (Backend API)
+
 76. **Microservice Topology**: Does the Engine run as an isolated pod communicating via gRPC, or an embedded library?
     - **Options**:
       - A) Isolated Pod (gRPC/Protobuf)
@@ -556,6 +572,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Mandatory for any task that takes >1 second to prevent gateway timeouts.
 
 ## 17. Simulation & Self-Play Infrastructure
+
 81. **Heuristic Tuning**: Does the ecosystem support the Engine playing against itself internally to automatically tune heuristics?
     - **Options**:
       - A) Yes (Continuous self-play loop)
@@ -589,6 +606,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Standard practice to prevent "strategy collapse" or overfitting.
 
 ## 18. Testing Strategy & Determinism
+
 86. **Strict Determinism**: Must the MCTS engine guarantee 100% deterministic output trees given a fixed integer seed?
     - **Options**:
       - A) Yes (Mandatory for regression testing)
@@ -622,6 +640,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option B - Essential for the core math modules as per `TDD_SKILL.md`.
 
 ## 19. Security, Cheating, and Sandboxing
+
 91. **Payload Sanitization**: Could a maliciously crafted JSON GameState payload force the engine into an infinite parsing loop?
     - **Options**:
       - A) Yes (If recursive parser is used without depth limits)
@@ -655,6 +674,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - Tying compute strictly to the `Gas Tank` economy naturally limits abuse.
 
 ## 20. Frontend & `vindicta-platform.github.io`
+
 96. **Visual Overlays**: Does the single-page web frontend render MCTS evaluations visually (e.g., win probability bar graphs)?
     - **Options**:
       - A) Yes (Live-updating charts)
@@ -681,7 +701,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Recommended**: Option C - Streaming "Thinking..." logs is the most engaging way to handle high-latency AI tasks.
 
 100. **Client-Side Engine**: Are lightweight WASM (WebAssembly) versions of the MCTS engine planned for offloading compute to the browser?
-     - **Options**:
+    - **Options**:
        - A) Yes (Future Roadmap)
        - B) No (Keep compute behind the API for Prop/IP protection)
-     - **Recommended**: Option B - Competitive game logic should stay on the server to prevent cheating and reverse-engineering of the evaluation weights.
+    - **Recommended**: Option B - Competitive game logic should stay on the server to prevent cheating and reverse-engineering of the evaluation weights.

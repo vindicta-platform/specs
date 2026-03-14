@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 006-rules-validation-parser
+﻿# Specification Quality Checklist: 006-rules-validation-parser
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Verified rules engine requirements are abstract and user-focused.

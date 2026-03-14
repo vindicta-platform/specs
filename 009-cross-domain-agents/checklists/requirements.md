@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 009-cross-domain-agents
+﻿# Specification Quality Checklist: 009-cross-domain-agents
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Completed template formatting and business outcome mapping.

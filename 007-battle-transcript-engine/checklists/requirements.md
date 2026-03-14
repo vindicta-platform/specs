@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 007-battle-transcript-engine
+﻿# Specification Quality Checklist: 007-battle-transcript-engine
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Verified streaming operations are framed contextually without strict protocol (WebSocket) demands.

@@ -1,4 +1,4 @@
-# Specification Quality Checklist: FEAT-044 MCTS Engine Foundation
+﻿# Specification Quality Checklist: FEAT-044 MCTS Engine Foundation
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-02-28
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checklist passed validation successfully based on the provided input.

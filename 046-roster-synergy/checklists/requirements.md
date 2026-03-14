@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 046-roster-synergy
+﻿# Specification Quality Checklist: 046-roster-synergy
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Focused on "cross-unit efficiency" outcomes.
