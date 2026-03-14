@@ -13,7 +13,7 @@ on:
         type: string
 
 concurrency:
-  group: speckit-pipeline-${{ github.ref }}
+  group: speckit-pipeline-${{ github.ref }}-${{ inputs.feature_dir || github.run_id }}
   cancel-in-progress: false
 
 permissions:
