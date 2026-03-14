@@ -1,4 +1,4 @@
-﻿# Phase 0: Research & Architecture Decisions (FEAT-044)
+# Phase 0: Research & Architecture Decisions (FEAT-044)
 
 ## 1. MCTS Arena Allocator in Python
 
@@ -127,6 +127,7 @@ class MCTSTracer:
 **Decision**: Use Zobrist Hashing with pre-generated 64-bit random constants.
 
 **Generation Strategy**:
+
 ```python
 
 # Generated once at module load, seeded deterministically for reproducibility
