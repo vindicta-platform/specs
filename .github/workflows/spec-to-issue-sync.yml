@@ -84,34 +84,28 @@ jobs:
             let created = 0;
             let skipped = 0;
 
-            // Track titles created in this run to prevent duplicates from
-            // indexing delay (issue #12 in workflow review)
-            const createdTitles = new Set();
-
-            for (const task of tasks) {
-              const issueTitle = `[${featureDir}] Task ${task.num}: ${task.title}`;
-
-              // Skip if we already created this title in this run
-              if (createdTitles.has(issueTitle)) {
-                core.info(`Skipping: ${issueTitle} (created earlier in this run)`);
-                skipped++;
-                continue;
-              }
-
-              // Check if issue already exists using List API (no indexing delay)
-              const { data: existingIssues } = await github.rest.issues.listForRepo({
+            // Fetch all existing speckit issues upfront (with pagination)
+            // to avoid repeated API calls inside the loop
+            const existingIssues = await github.paginate(
+              github.rest.issues.listForRepo,
+              {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 state: 'all',
                 labels: 'speckit,automated',
                 per_page: 100
-              });
+              }
+            );
+            const existingTitles = new Set(existingIssues.map(i => i.title));
 
-              const alreadyExists = existingIssues.some(issue =>
-                issue.title === issueTitle
-              );
+            // Track titles created in this run to prevent duplicates
+            const createdTitles = new Set();
 
-              if (alreadyExists) {
+            for (const task of tasks) {
+              const issueTitle = `[${featureDir}] Task ${task.num}: ${task.title}`;
+
+              // Skip if already exists remotely or created earlier in this run
+              if (existingTitles.has(issueTitle) || createdTitles.has(issueTitle)) {
                 core.info(`Skipping: ${issueTitle} (already exists)`);
                 skipped++;
                 continue;
@@ -120,7 +114,7 @@ jobs:
               const issueBody = [
                 `## ${task.title}`,
                 '',
-                `**Source:** \`${featureDir}/tasks.md\` — Task ${task.num}`,
+                `**Source:** \`${featureDir}/tasks.md\` -- Task ${task.num}`,
                 '',
                 task.body,
                 '',
@@ -141,7 +135,7 @@ jobs:
               core.info(`Created: ${issueTitle}`);
             }
 
-            core.summary.addRaw(`## 📋 Spec-to-Issue Sync\n\n`);
+            core.summary.addRaw(`## Spec-to-Issue Sync\n\n`);
             core.summary.addRaw(`- **Feature:** \`${featureDir}\`\n`);
             core.summary.addRaw(`- **Created:** ${created} issues\n`);
             core.summary.addRaw(`- **Skipped:** ${skipped} (already exist)\n`);
