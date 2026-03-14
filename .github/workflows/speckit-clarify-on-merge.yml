@@ -13,6 +13,10 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: speckit-clarify-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -32,48 +36,52 @@ jobs:
         run: |
           if [ -n "${{ inputs.feature_dir }}" ]; then
             echo "specs=${{ inputs.feature_dir }}/spec.md" >> "$GITHUB_OUTPUT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           else
             CHANGED=$(git diff --name-only HEAD~1 HEAD -- '**/spec.md' | tr '\n' ',' | sed 's/,$//')
-            echo "specs=$CHANGED" >> "$GITHUB_OUTPUT"
+            if [ -z "$CHANGED" ]; then
+              echo "::notice::No spec.md files changed in this push. Skipping."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "specs=$CHANGED" >> "$GITHUB_OUTPUT"
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
-      - name: Skip if no specs changed
-        if: steps.detect.outputs.specs == ''
-        run: |
-          echo "No spec.md files changed in this push. Skipping."
-          exit 0
-
       - name: Setup Python
-        if: steps.detect.outputs.specs != ''
+        if: steps.detect.outputs.skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Setup uv
-        if: steps.detect.outputs.specs != ''
+        if: steps.detect.outputs.skip != 'true'
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
 
       - name: Cache Ollama models
-        if: steps.detect.outputs.specs != ''
+        if: steps.detect.outputs.skip != 'true'
         uses: actions/cache@v4
         with:
           path: ~/.ollama
-          key: ${{ runner.os }}-ollama-mistral
+          key: ${{ runner.os }}-ollama-${{ vars.SPECKIT_MODEL || 'gemma2:2b' }}
           restore-keys: |
             ${{ runner.os }}-ollama-
 
       - name: Start Ollama service
-        if: steps.detect.outputs.specs != ''
+        if: steps.detect.outputs.skip != 'true'
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
           ollama serve &
           sleep 5
-          ollama pull mistral || true
+          MODEL="$SPECKIT_MODEL"
+          ollama pull "$MODEL" || true
+        env:
+          SPECKIT_MODEL: ${{ vars.SPECKIT_MODEL || 'gemma2:2b' }}
 
       - name: Run Speckit Clarify
-        if: steps.detect.outputs.specs != ''
+        if: steps.detect.outputs.skip != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGED_SPECS: ${{ steps.detect.outputs.specs }}

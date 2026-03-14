@@ -4,6 +4,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
 jobs:
   markdown-lint:
     name: Markdown Lint
@@ -100,5 +105,5 @@ jobs:
               exit 1
             fi
             
-            echo "✓ $DIR passed structural validation"
+            echo "$DIR passed structural validation"
           done
