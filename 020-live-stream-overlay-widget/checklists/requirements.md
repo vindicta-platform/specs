@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 020-live-stream-overlay-widget
+﻿# Specification Quality Checklist: 020-live-stream-overlay-widget
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Removed WebSocket/OBS specific implementation details, focusing on "real-time broadcast interface".

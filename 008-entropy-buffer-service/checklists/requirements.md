@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 008-entropy-buffer-service
+﻿# Specification Quality Checklist: 008-entropy-buffer-service
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Abstracted gRPC mention to "secure high-throughput interface".

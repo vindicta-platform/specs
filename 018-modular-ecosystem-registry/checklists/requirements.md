@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 018-modular-ecosystem-registry
+﻿# Specification Quality Checklist: 018-modular-ecosystem-registry
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Focused on plugin governance constraints.

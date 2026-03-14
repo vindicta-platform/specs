@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 027-visual-army-painter
+﻿# Specification Quality Checklist: 027-visual-army-painter
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Focused on "digital representation/planning" outcomes.

@@ -1,5 +1,6 @@
-<!--
+﻿<!--
 Sync Impact Report:
+
 - Version change: 3.0.0 → 3.1.0 (MINOR)
 - List of modified sections:
   - Modular Ecosystem Registry: Updated with exact repository list from `vindicta-platform` organization analysis via GitHub MCP.
@@ -19,18 +20,23 @@ Sync Impact Report:
 ## Core Principles
 
 ### I. The Economic Prime Directive
+
 Core operations MUST run on GCP Free Tier. Agents MUST ONLY operate within the `vindicta-warhammer` project. Cost efficiency is a primary architectural constraint; variable-cost features MUST be isolated behind cost-estimation gates and Gemini-standard inference.
 
 ### II. Spec-Driven Methodology (BDD-First Mandate)
+
 No code without a Spec. All development MUST follow the **BDD → TDD → Implementation** flow. Behavioral expectations MUST be defined and confirmed failing FIRST. The `.specify` folder is the single source of truth for feature intent and requirement alignment.
 
 ### III. Tooling Adherence & Environment
+
 Strictly Windows environment (PowerShell/Batch). Mandatory use of `uv` for dependency management. Utilize project-defined CLI tools (`specify`, `just`) for all orchestration and setup. All repositories must maintain ecosystem synchronization with the Core.
 
 ### IV. Agentic Rights & Mechanical Fidelity
+
 Brevity is the enemy of nuance; chains of thought are primary deliverables. Mechanical resolutions (RNG) MUST use casino-grade CSPRNG and produce `EntropyProof`. Strict adherence to the established Source of Truth rule-sets (Engine, Economy, Oracle) is non-negotiable.
 
 ### V. Automated Quality & Stability
+
 Working models must not leave the repository in a broken state. Full unit suite must run in <60s; individual tests <1s. Mandatory `async/await` for all I/O. WIP features must be tagged with `@wip` and remain black-box oriented.
 
 ## Modular Ecosystem Registry
@@ -38,6 +44,7 @@ Working models must not leave the repository in a broken state. Full unit suite 
 The Vindicta Platform (org: `vindicta-platform`) is a distributed ecosystem of specialized repositories, each governing a specific domain. All components MUST align with the unified architecture and governance defined here.
 
 ### Specialized Repositories
+
 - **`vindicta-platform`**: The Orchestrator and mono-entry point for the platform.
 - **`vindicta-foundation`**: Core base models, underlying architecture, and constitutional framework.
 - **`vindicta-engine`**: Mechanical domain context, including Physics, Dice, and AI Core.
@@ -55,10 +62,11 @@ The Vindicta Platform (org: `vindicta-platform`) is a distributed ecosystem of s
 Prioritize precision and technical accuracy over conversational exhaustiveness. The Human User is the **Supreme Architect**. Constitutional requirements are non-negotiable. Mandatory use of directory-based memory. Standalone FAQ docs are prohibited; fix UX or documentation instead.
 
 ### VI. GitHub Operations Priority
+
 Agents MUST prioritize `github-mcp-server` for all GitHub interactions (Issues, PRs, metadata). Fallback to `gh` CLI ONLY if MCP is unavailable or lacks specific functionality. Local `git` commands remain valid for direct filesystem workspace synchronization.
 
 ## Governance
 
-The Constitution is the supreme governing document and supersedes all other practices. All PRs and reviews MUST verify compliance with these principles. Amendments require documentation and version bumps following semantic versioning. 
+The Constitution is the supreme governing document and supersedes all other practices. All PRs and reviews MUST verify compliance with these principles. Amendments require documentation and version bumps following semantic versioning.
 
 **Version**: 3.1.0 | **Ratified**: 2026-03-01 | **Last Amended**: 2026-03-01

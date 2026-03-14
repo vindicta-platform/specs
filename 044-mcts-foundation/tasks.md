@@ -1,4 +1,4 @@
-# Tasks: FEAT-044 MCTS Engine Foundation (PAUSED)
+﻿# Tasks: FEAT-044 MCTS Engine Foundation (PAUSED)
 
 > [!IMPORTANT]
 > This task is currently **PAUSED** per ADL directive (2026-03-07) to prioritize the organization-wide CI template rollout.
@@ -196,19 +196,23 @@
 ### Parallel Opportunities
 
 #### Phase 1 (Setup)
+
 - T003, T004, T005 can all run in parallel (different files)
 
 #### Phase 2 (Foundational)
+
 - T006, T007, T008 can all run in parallel [P] (independent models, same file is safe since each is a separate class definition)
 - T012 can run in parallel with T010, T011 (different files)
 - T013, T014, T015, T016 can all run in parallel (different test files/sections)
 - T017a, T017b can run in parallel with other foundational tasks (FR-008 validation)
 
 #### Phase 3 (US1) & Phase 4 (US2) — can run in parallel
+
 - T018, T019, T019a, T020, T020a can run in parallel (different test focus areas)
 - T029, T030, T031, T032, T033, T034 can all run in parallel (all in test_generator.py but independent test cases)
 
 #### Phase 5 (Polish)
+
 - T042, T043, T044, T046, T047, T048b, T049 can all run in parallel
 
 ---
@@ -216,25 +220,33 @@
 ## Parallel Example: User Story 1
 
 ```bash
+
 # Launch all tests for User Story 1 together:
+
 Task T018: "Contract test for MCTSEngine.evaluate_state() in tests/mcts/test_engine.py"
 Task T019: "Unit test for static evaluation heuristic in tests/mcts/test_heuristics.py"
 Task T020: "Integration test for end-to-end evaluation in tests/mcts/test_engine.py"
 
 # Launch core implementation (after tests fail):
+
 Task T021: "Static evaluation heuristic in src/vindicta_engine/mcts/heuristics.py"
 Task T022: "Entropy Buffer integration stub in src/vindicta_engine/mcts/heuristics.py"
+
 # Then sequential:
+
 Task T023 → T024 → T025 → T026 → T027 → T028 (engine core loop, depends on heuristics)
 ```
 
 ## Parallel Example: User Story 2
 
 ```bash
+
 # Launch ALL tests for User Story 2 together:
+
 Task T029-T034: "All move generator tests in tests/mcts/test_generator.py"
 
 # Launch implementation (after tests fail):
+
 Task T035: "MoveGenerator class skeleton"
 Task T036-T040: "Phase-specific logic (can be partially parallel within generator.py)"
 Task T041: "Wire into engine (sequential, depends on T035 + US1 engine)"

@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 047-upset-detector
+﻿# Specification Quality Checklist: 047-upset-detector
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Focused on "performance anomaly detection" outcomes.
