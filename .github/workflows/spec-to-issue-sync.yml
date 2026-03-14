@@ -31,9 +31,11 @@ jobs:
 
       - name: Detect changed tasks
         id: detect
+        env:
+          FEATURE_INPUT: ${{ inputs.feature_dir }}
         run: |
-          if [ -n "${{ inputs.feature_dir }}" ]; then
-            FEATURE_DIR="${{ inputs.feature_dir }}"
+          if [ -n "$FEATURE_INPUT" ]; then
+            FEATURE_DIR="$FEATURE_INPUT"
           else
             FEATURE_DIR=$(git diff --name-only HEAD~1 HEAD | grep 'tasks.md' | head -1 | xargs dirname 2>/dev/null || echo "")
           fi
@@ -82,15 +84,34 @@ jobs:
             let created = 0;
             let skipped = 0;
 
+            // Track titles created in this run to prevent duplicates from
+            // indexing delay (issue #12 in workflow review)
+            const createdTitles = new Set();
+
             for (const task of tasks) {
               const issueTitle = `[${featureDir}] Task ${task.num}: ${task.title}`;
 
-              // Check if issue already exists
-              const { data: existing } = await github.rest.search.issuesAndPullRequests({
-                q: `repo:vindicta-platform/specs "${issueTitle}" is:issue`
+              // Skip if we already created this title in this run
+              if (createdTitles.has(issueTitle)) {
+                core.info(`Skipping: ${issueTitle} (created earlier in this run)`);
+                skipped++;
+                continue;
+              }
+
+              // Check if issue already exists using List API (no indexing delay)
+              const { data: existingIssues } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'all',
+                labels: 'speckit,automated',
+                per_page: 100
               });
 
-              if (existing.total_count > 0) {
+              const alreadyExists = existingIssues.some(issue =>
+                issue.title === issueTitle
+              );
+
+              if (alreadyExists) {
                 core.info(`Skipping: ${issueTitle} (already exists)`);
                 skipped++;
                 continue;
@@ -108,13 +129,14 @@ jobs:
               ].join('\n');
 
               await github.rest.issues.create({
-                owner: 'vindicta-platform',
-                repo: 'specs',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 title: issueTitle,
                 body: issueBody,
                 labels: ['speckit', 'automated']
               });
 
+              createdTitles.add(issueTitle);
               created++;
               core.info(`Created: ${issueTitle}`);
             }
