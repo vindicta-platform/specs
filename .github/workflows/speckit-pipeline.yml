@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   pipeline:
-    name: "Speckit Clarify \u2192 Plan \u2192 Tasks"
+    name: Speckit Clarify / Plan / Tasks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,18 +69,18 @@ jobs:
           else
             echo "feature_dir=${FEATURE_DIR}" >> $GITHUB_OUTPUT
             echo "skip=false" >> $GITHUB_OUTPUT
-            echo "### 🏗️ Speckit Pipeline: ${FEATURE_DIR}" >> $GITHUB_STEP_SUMMARY
+            echo "### Speckit Pipeline: ${FEATURE_DIR}" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Run Clarify
         if: steps.detect.outputs.skip == 'false'
         run: |
-          echo "🔍 Running clarify for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
+          echo "Running clarify for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
           if [ -f "scripts/speckit_clarify.py" ]; then
             uv run python scripts/speckit_clarify.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Clarify complete" >> $GITHUB_STEP_SUMMARY
+            echo "Clarify complete" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+            echo "speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -89,12 +89,12 @@ jobs:
       - name: Run Plan
         if: steps.detect.outputs.skip == 'false'
         run: |
-          echo "📋 Running plan for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
+          echo "Running plan for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
           if [ -f "scripts/speckit_plan.py" ]; then
             uv run python scripts/speckit_plan.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Plan complete" >> $GITHUB_STEP_SUMMARY
+            echo "Plan complete" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ speckit_plan.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+            echo "speckit_plan.py not found, skipping" >> $GITHUB_STEP_SUMMARY
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,12 +103,12 @@ jobs:
       - name: Run Tasks
         if: steps.detect.outputs.skip == 'false'
         run: |
-          echo "📝 Running tasks for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
+          echo "Running tasks for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
           if [ -f "scripts/speckit_tasks.py" ]; then
             uv run python scripts/speckit_tasks.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Tasks complete" >> $GITHUB_STEP_SUMMARY
+            echo "Tasks complete" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ speckit_tasks.py not found, skipping" >> $GITHUB_STEP_SUMMARY
+            echo "speckit_tasks.py not found, skipping" >> $GITHUB_STEP_SUMMARY
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,7 +122,7 @@ jobs:
           commit-message: "speckit: auto-generate pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"
           title: "speckit: pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"
           body: |
-            ## 🏗️ Speckit Pipeline Artifacts
+            ## Speckit Pipeline Artifacts
 
             Auto-generated clarifications, plan, and tasks for `${{ steps.detect.outputs.feature_dir }}`.
 
