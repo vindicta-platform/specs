@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 012-system-audit-log
+﻿# Specification Quality Checklist: 012-system-audit-log
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Removed "SHA-256" references, broadened to "cryptographic integrity checks."

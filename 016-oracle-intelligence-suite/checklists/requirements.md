@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 016-oracle-intelligence-suite
+﻿# Specification Quality Checklist: 016-oracle-intelligence-suite
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed specifics on LLM parameters; focused on the business logic of AI analysis.

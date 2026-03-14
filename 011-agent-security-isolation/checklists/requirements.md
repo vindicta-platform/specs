@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 011-agent-security-isolation
+﻿# Specification Quality Checklist: 011-agent-security-isolation
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed Docker/chroot specifics; defined purely by "environment isolation boundaries."

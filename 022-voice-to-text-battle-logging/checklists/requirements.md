@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 022-voice-to-text-battle-logging
+﻿# Specification Quality Checklist: 022-voice-to-text-battle-logging
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Abstracted the speech-to-intent logic; focused on the business outcome of "hands-free logging".

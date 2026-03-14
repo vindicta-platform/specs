@@ -13,7 +13,7 @@ on:
         type: string
 
 concurrency:
-  group: speckit-pipeline-${{ github.ref }}
+  group: speckit-pipeline-${{ github.ref }}-${{ inputs.feature_dir || github.run_id }}
   cancel-in-progress: false
 
 permissions:
@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   pipeline:
-    name: Speckit Clarify → Plan → Tasks
+    name: Speckit Plan → Tasks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,20 +70,6 @@ jobs:
             echo "### 🏗️ Speckit Pipeline: ${FEATURE_DIR}" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Run Clarify
-        if: steps.detect.outputs.skip == 'false'
-        run: |
-          echo "🔍 Running clarify for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
-          if [ -f "scripts/speckit_clarify.py" ]; then
-            uv run python scripts/speckit_clarify.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
-            echo "✅ Clarify complete" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
       - name: Run Plan
         if: steps.detect.outputs.skip == 'false'
         run: |
@@ -122,10 +108,9 @@ jobs:
           body: |
             ## 🏗️ Speckit Pipeline Artifacts
 
-            Auto-generated clarifications, plan, and tasks for `${{ steps.detect.outputs.feature_dir }}`.
+            Auto-generated plan and tasks for `${{ steps.detect.outputs.feature_dir }}`.
 
             **Pipeline steps:**
-            - [x] Clarify (extended_clarifications.md)
             - [x] Plan (plan.md)
             - [x] Tasks (tasks.md)
 

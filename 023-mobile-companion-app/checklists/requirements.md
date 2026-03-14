@@ -1,4 +1,4 @@
-# Specification Quality Checklist: 023-mobile-companion-app
+﻿# Specification Quality Checklist: 023-mobile-companion-app
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-01
@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Focused on "low footprint" and "always-on availability" outcomes.
