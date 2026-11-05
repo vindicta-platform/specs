@@ -1,5 +1,7 @@
 # Vindicta Platform — Specification Registry
 
+> **Status:** complete as a design: 47 feature specifications written BDD-first for the Vindicta Platform, February-March 2026. Specs 002-008 carry the correctness argument; 019-043 are unbuilt product ideas. Single maintainer.
+
 The single source of truth for all platform feature specifications. Each feature is defined using a BDD-first, spec-driven methodology before any implementation begins.
 
 ## Repository Structure
@@ -58,3 +60,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on creating and reviewing 
 ## License
 
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+## Independence
+
+This is a personal project by Brandon Fox, built on my own time and equipment. It is not affiliated with, endorsed by, or derived from the work of any employer, current or former, and does not represent their views, products or practices. Licensed under the MIT License; principles at [First-ADE/PRINCIPLES.md](https://github.com/First-ADE/.github/blob/main/PRINCIPLES.md).
