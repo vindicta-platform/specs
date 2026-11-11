@@ -31,9 +31,11 @@ jobs:
 
       - name: Detect changed tasks
         id: detect
+        env:
+          FEATURE_INPUT: ${{ inputs.feature_dir }}
         run: |
-          if [ -n "${{ inputs.feature_dir }}" ]; then
-            FEATURE_DIR="${{ inputs.feature_dir }}"
+          if [ -n "$FEATURE_INPUT" ]; then
+            FEATURE_DIR="$FEATURE_INPUT"
           else
             FEATURE_DIR=$(git diff --name-only HEAD~1 HEAD | grep 'tasks.md' | head -1 | xargs dirname 2>/dev/null || echo "")
           fi
@@ -82,15 +84,28 @@ jobs:
             let created = 0;
             let skipped = 0;
 
+            // Fetch all existing speckit issues upfront (with pagination)
+            // to avoid repeated API calls inside the loop
+            const existingIssues = await github.paginate(
+              github.rest.issues.listForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'all',
+                labels: 'speckit,automated',
+                per_page: 100
+              }
+            );
+            const existingTitles = new Set(existingIssues.map(i => i.title));
+
+            // Track titles created in this run to prevent duplicates
+            const createdTitles = new Set();
+
             for (const task of tasks) {
               const issueTitle = `[${featureDir}] Task ${task.num}: ${task.title}`;
 
-              // Check if issue already exists
-              const { data: existing } = await github.rest.search.issuesAndPullRequests({
-                q: `repo:vindicta-platform/specs "${issueTitle}" is:issue`
-              });
-
-              if (existing.total_count > 0) {
+              // Skip if already exists remotely or created earlier in this run
+              if (existingTitles.has(issueTitle) || createdTitles.has(issueTitle)) {
                 core.info(`Skipping: ${issueTitle} (already exists)`);
                 skipped++;
                 continue;
@@ -99,7 +114,7 @@ jobs:
               const issueBody = [
                 `## ${task.title}`,
                 '',
-                `**Source:** \`${featureDir}/tasks.md\` — Task ${task.num}`,
+                `**Source:** \`${featureDir}/tasks.md\` -- Task ${task.num}`,
                 '',
                 task.body,
                 '',
@@ -108,18 +123,19 @@ jobs:
               ].join('\n');
 
               await github.rest.issues.create({
-                owner: 'vindicta-platform',
-                repo: 'specs',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 title: issueTitle,
                 body: issueBody,
                 labels: ['speckit', 'automated']
               });
 
+              createdTitles.add(issueTitle);
               created++;
               core.info(`Created: ${issueTitle}`);
             }
 
-            core.summary.addRaw(`## 📋 Spec-to-Issue Sync\n\n`);
+            core.summary.addRaw(`## Spec-to-Issue Sync\n\n`);
             core.summary.addRaw(`- **Feature:** \`${featureDir}\`\n`);
             core.summary.addRaw(`- **Created:** ${created} issues\n`);
             core.summary.addRaw(`- **Skipped:** ${skipped} (already exist)\n`);
