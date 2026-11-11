@@ -1,0 +1,134 @@
+name: Glossary Consistency Checker
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '*/spec.md'
+      - '*/plan.md'
+      - '*/tasks.md'
+  workflow_dispatch:
+
+concurrency:
+  group: glossary-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    name: Validate Terminology Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed feature dirs
+        id: detect
+        run: |
+          DIRS=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -E '(spec|plan|tasks)\.md$' | xargs -I{} dirname {} | sort -u | paste -sd ',' -)
+          if [ -z "$DIRS" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "dirs=$DIRS" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check glossary consistency
+        if: steps.detect.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Load glossary if exists
+            const glossaryPaths = ['glossary.md', 'docs/glossary.md', '.specify/glossary.md'];
+            let glossaryTerms = new Set();
+            let glossaryContent = '';
+
+            for (const gp of glossaryPaths) {
+              if (fs.existsSync(gp)) {
+                glossaryContent = fs.readFileSync(gp, 'utf8');
+                // Extract terms (lines starting with **term** or ## term or - **term**)
+                const termMatches = glossaryContent.matchAll(/(?:^##\s+|^-\s+\*\*|^\*\*)([^*\n]+)/gm);
+                for (const m of termMatches) {
+                  glossaryTerms.add(m[1].trim().toLowerCase());
+                }
+                break;
+              }
+            }
+
+            const dirs = '${{ steps.detect.outputs.dirs }}'.split(',');
+            let report = '### \ud83d\udcda Glossary Consistency Check\n\n';
+
+            // Collect all unique capitalized terms across artifacts
+            const allTerms = new Map(); // term -> Set of files
+
+            for (const dir of dirs) {
+              for (const file of ['spec.md', 'plan.md', 'tasks.md']) {
+                const fp = path.join(dir.trim(), file);
+                if (!fs.existsSync(fp)) continue;
+                const content = fs.readFileSync(fp, 'utf8');
+
+                // Find capitalized multi-word terms (likely domain concepts)
+                const words = content.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b/g);
+                for (const w of words) {
+                  const term = w[1];
+                  if (!allTerms.has(term)) allTerms.set(term, new Set());
+                  allTerms.get(term).add(file);
+                }
+              }
+            }
+
+            // Report terms not in glossary
+            const undefined_terms = [];
+            for (const [term, files] of allTerms) {
+              if (glossaryTerms.size > 0 && !glossaryTerms.has(term.toLowerCase())) {
+                undefined_terms.push({ term, files: [...files].join(', ') });
+              }
+            }
+
+            if (glossaryTerms.size === 0) {
+              report += '> \u2139\ufe0f No glossary file found. Consider creating one at `glossary.md` or `.specify/glossary.md`.\n\n';
+              report += `Found **${allTerms.size}** unique capitalized terms across artifacts.\n`;
+            } else if (undefined_terms.length > 0) {
+              report += `Found **${undefined_terms.length}** terms not in glossary:\n\n`;
+              report += '| Term | Used In |\n|------|---------|\n';
+              for (const { term, files } of undefined_terms.slice(0, 20)) {
+                report += `| ${term} | ${files} |\n`;
+              }
+              if (undefined_terms.length > 20) {
+                report += `\n_...and ${undefined_terms.length - 20} more_\n`;
+              }
+            } else {
+              report += '\u2705 All terms match the project glossary.\n';
+            }
+
+            core.summary.addRaw(report);
+            await core.summary.write();
+
+            // Post on PR
+            if (context.payload.pull_request) {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              const existing = comments.find(c =>
+                c.body.includes('Glossary Consistency') && c.user.login === 'github-actions[bot]'
+              );
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  comment_id: existing.id, body: report
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: context.issue.number, body: report
+                });
+              }
+            }
