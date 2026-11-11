@@ -129,8 +129,14 @@ Feature: Dice core (spec 002)
     When the same sequence of rolls is requested twice
     Then both sequences are identical
 
-  Scenario: An out-of-range request is refused (C-004)
-    Given a lower bound below 1, an upper bound not above the lower bound, a count below 1, or a range wider than 2^32
+  Scenario Outline: An out-of-range request is refused (C-004)
+    Given a request with <invalid condition>
     When a roll is requested
     Then a validation error is raised
+    Examples:
+      | invalid condition                     |
+      | a lower bound below 1                 |
+      | an upper bound not above the lower bound |
+      | a count below 1                       |
+      | a range wider than 2^32                |
 ```
