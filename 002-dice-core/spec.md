@@ -108,8 +108,8 @@ Feature: Dice core (spec 002)
       | context    |
 
   Scenario: The commitment comes first (C-002)
-    Given a commitment was given to the other party before the roll
-    When the seed is revealed after the roll
+    Given the context and other outcome-influencing inputs have not been fixed
+    When the commitment is given to the other party before those inputs are fixed, the roll is produced, and the seed is revealed
     Then the commitment recomputed from the revealed seed equals the one given
 
   Scenario: The mapping is exactly uniform (C-003)
