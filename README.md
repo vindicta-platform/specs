@@ -1,6 +1,6 @@
 # Vindicta Platform — Specification Registry
 
-> **Status:** complete as a design: 47 feature specifications written BDD-first for the Vindicta Platform, February-March 2026. Specs 002-008 carry the correctness argument; 019-043 are unbuilt product ideas. Single maintainer.
+> **Status:** active, pre-1.0. 47 feature specifications written BDD-first for the Vindicta Platform, February-March 2026; work resumed in November 2026 with spec 002 (dice core), which is being built first. Specs 002-008 carry the correctness argument; 019-043 are product ideas not yet built. Single maintainer.
 
 The single source of truth for all platform feature specifications. Each feature is defined using a BDD-first, spec-driven methodology before any implementation begins.
 
