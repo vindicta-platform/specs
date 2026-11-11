@@ -1,12 +1,11 @@
 name: Spec Analyze Gate
 
 on:
+  # No path filter: "Cross-Artifact Consistency Analysis" is a required check, so it must report on
+  # every pull request. The detect step runs first and the expensive steps are skipped when no
+  # spec.md, plan.md or tasks.md changed.
   pull_request:
     branches: [main]
-    paths:
-      - '*/spec.md'
-      - '*/plan.md'
-      - '*/tasks.md'
   workflow_dispatch:
     inputs:
       feature_dir:
@@ -32,28 +31,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Ollama
-        run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
-          sleep 5
-
-      - name: Pull model
-        run: |
-          MODEL="${SPECKIT_MODEL:-gemma2:2b}"
-          echo "Pulling model: $MODEL"
-          ollama pull "$MODEL"
-        env:
-          SPECKIT_MODEL: ${{ vars.SPECKIT_MODEL || 'gemma2:2b' }}
-
-      - name: Install Python dependencies
-        run: |
-          pip install ollama PyGithub
-
       - name: Detect changed feature dirs
         id: detect
         run: |
@@ -69,6 +46,32 @@ jobs:
               echo "skip=false" >> $GITHUB_OUTPUT
             fi
           fi
+
+      - uses: actions/setup-python@v5
+        if: steps.detect.outputs.skip != 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Install Ollama
+        if: steps.detect.outputs.skip != 'true'
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          sleep 5
+
+      - name: Pull model
+        if: steps.detect.outputs.skip != 'true'
+        run: |
+          MODEL="${SPECKIT_MODEL:-gemma2:2b}"
+          echo "Pulling model: $MODEL"
+          ollama pull "$MODEL"
+        env:
+          SPECKIT_MODEL: ${{ vars.SPECKIT_MODEL || 'gemma2:2b' }}
+
+      - name: Install Python dependencies
+        if: steps.detect.outputs.skip != 'true'
+        run: |
+          pip install ollama PyGithub
 
       - name: Run speckit analyze
         if: steps.detect.outputs.skip != 'true'
