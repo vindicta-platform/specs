@@ -90,7 +90,7 @@ Feature: Dice core (spec 002)
   Scenario: The proof binds the roll (C-001)
     Given a roll result with its proof and its revealed seed
     When an auditor recomputes each value from the seed, the context and its position
-    Then the recomputed values equal the returned values
+    Then verification succeeds only when the proof and commitment validate and the recomputed values equal the returned values
 
   Scenario: An altered value fails verification (C-001)
     Given a valid roll result
