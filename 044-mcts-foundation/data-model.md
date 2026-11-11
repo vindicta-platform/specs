@@ -3,9 +3,11 @@
 The MCTS Engine defines two primary entities: `GameState` and `SearchNode`. These will be represented using `pydantic` classes inheriting from `VindictaModel` to ensure serialization to JSON and integration compatibility across the Vindicta ecosystem.
 
 ## GameState
+
 A mathematical translation of the current 40k board.
 
 **Fields**:
+
 - `turn_number` (int): Current game turn (1-5).
 - `active_player` (str): Identifier for the player whose turn it is.
 - `unit_positions` (Dict[str, tuple[float, float, float]]): Mapping of unit IDs to their 3D coordinates.
@@ -16,9 +18,11 @@ A mathematical translation of the current 40k board.
 Modified immutably (copy-on-write) during tree expansion to ensure deterministic search.
 
 ## SearchNode
+
 A node representing a branch in the MCTS tree.
 
 **Fields**:
+
 - `id` (int): Internal index in the arena buffer.
 - `parent_id` (int | None): Pointer to parent node.
 - `children` (List[int]): Pointers to child nodes.

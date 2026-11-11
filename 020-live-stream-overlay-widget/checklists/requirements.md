@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Removed WebSocket/OBS specific implementation details, focusing on "real-time broadcast interface".
