@@ -76,6 +76,32 @@ These resolve ambiguities found when the two existing implementations were read 
 - **C-007 (SC-003): the 1 ms budget is reported, not gated,** until a baseline measurement exists on the reference CI runner.
 - **C-008: one implementation.** The dice core has a single implementation, in vindicta-foundation. Other packages import it.
 
+### Session 2026-11-11 (Automated)
+
+- Q: What is the expected response when the system receives an out-of-range request? → A: Validation error
+- Q: What is the format of the 'Roll Entropy' entity? → A: Not specified
+- Q: What happens to the 'Roll Entropy' when a new roll is requested? → A: ['Recomputed', 'Updated']
+- Q: Is there any requirement for the system to support multiple languages or locales? → A: Not specified
+- Q: Which programming language(s) are used for the implementation of the dice core? → A: Not specified
+
+#### Detail
+
+- **Core user goals & success criteria** (Clear): What is the expected response when the system receives an out-of-range request?
+  - **Answer**: Validation error
+  - **Rationale**: The spec mentions that an out-of-range request should result in a validation error (C-004)
+- **Entities, attributes, relationships** (Clear): What is the format of the 'Roll Entropy' entity?
+  - **Answer**: Not specified
+  - **Rationale**: The spec only defines 'Roll Entropy' as a mathematical state and proof data associated with a generated random value, but not its format
+- **Lifecycle / state transitions** (Partial): What happens to the 'Roll Entropy' when a new roll is requested?
+  - **Answer**: ['Recomputed', 'Updated']
+  - **Rationale**: The spec states that a proof is valid only if every returned value can be recomputed from the committed seed, the context, and the value's position (C-001). This implies that the 'Roll Entropy' must be recomputed or updated for each new roll
+- **Accessibility or localization notes** (Missing): Is there any requirement for the system to support multiple languages or locales?
+  - **Answer**: Not specified
+  - **Rationale**: The spec does not mention any accessibility or localization requirements
+- **Technical constraints (language, storage, hosting)** (Missing): Which programming language(s) are used for the implementation of the dice core?
+  - **Answer**: Not specified
+  - **Rationale**: The spec does not mention the programming language used for the implementation
+
 ## Acceptance Scenarios in Gherkin *(proposed)*
 
 ```gherkin
