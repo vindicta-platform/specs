@@ -115,7 +115,7 @@ Feature: Dice core (spec 002)
   Scenario: The mapping is exactly uniform (C-003)
     Given the function that maps random bits to a range
     When it is evaluated over every input at a reduced bit width for each die size under test
-    Then every face is produced the same number of times
+    Then at least one input is accepted and every face is produced the same positive number of times
     And rejected inputs are counted separately
 
   Scenario: Production refuses a seed (C-005)
