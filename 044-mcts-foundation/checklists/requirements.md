@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checklist passed validation successfully based on the provided input.

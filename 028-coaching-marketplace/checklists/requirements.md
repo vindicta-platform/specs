@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Focused on "trust and transaction" outcomes.

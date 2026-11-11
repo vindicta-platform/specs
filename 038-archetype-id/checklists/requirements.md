@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Verified agnostic identification logic.

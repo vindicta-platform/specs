@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Removed specific mentions of SQL atomic transactions; replaced with abstract "atomic distribution".
