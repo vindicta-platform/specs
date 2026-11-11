@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Checked. Removed "SHA-256" references, broadened to "cryptographic integrity checks."
