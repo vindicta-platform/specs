@@ -217,7 +217,7 @@ For each, please provide a short answer or select an option to guide the technic
     - **Options**:
       - A) Return Result (Stop and save the computation cost)
       - B) Iterative Deepening (Proceed to Depth 4+ until time runs out)
-    - C) Statistical Softening (Use remaining time to run more rollouts on current leaves)
+      - C) Statistical Softening (Use remaining time to run more rollouts on current leaves)
     - **Recommended**: Option B - If time remains, deeper search is always better for accuracy.
 
 ## 7. Concurrency & Parallelization

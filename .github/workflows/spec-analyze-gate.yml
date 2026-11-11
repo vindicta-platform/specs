@@ -41,7 +41,7 @@ jobs:
           else
             # Only files whose content changed. Whitespace-only and blank-line-only edits (formatting, lint fixes)
             # do not change what a spec says, so they must not trigger an LLM analysis that can block the merge.
-            DIRS=$(git diff -w --ignore-blank-lines --numstat HEAD~1 HEAD | awk '$1 != "0" || $2 != "0" {print $3}' | grep -E '(^|/)(spec|plan|tasks)\.md$' | xargs -r -I{} dirname {} | sort -u | paste -sd ',' -)
+            DIRS=$(git diff -w --ignore-blank-lines --no-renames --numstat HEAD~1 HEAD | awk '$1 != "0" || $2 != "0" {print $3}' | grep -E '(^|/)(spec|plan|tasks)\.md$' | xargs -r -I{} dirname {} | sort -u | paste -sd ',' -)
             if [ -z "$DIRS" ]; then
               echo "::notice::No spec artifacts changed"
               echo "skip=true" >> $GITHUB_OUTPUT
