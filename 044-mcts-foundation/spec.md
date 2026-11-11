@@ -83,6 +83,32 @@ As the engine, I need to generate all legal moves (movement, shooting targets, c
   - **Answer**: 10KB - 1MB, depending on the complexity of the board state and unit positions
   - **Rationale**: A size limit for GameState payloads is necessary to ensure the system can process large and complex board states without running out of memory or crashing.
 
+### Session 2026-11-11 (Automated)
+
+- Q: What are the attributes of the GameState entity? → A: Turn number, active player, unit positions, unit state flags, and VP scores
+- Q: What are the attributes of the SearchNode entity? → A: Future state, visit count, simulation score, child nodes, and time spent
+- Q: How is the evaluation score calculated? → A: The evaluation score should be a numerical value representing the win probability for the current player, based on MCTS tree search results
+- Q: What is the expected size limit for GameState payloads? → A: 10KB - 1MB, depending on the complexity of the board state and unit positions
+- Q: What is the default evaluation score for board states with minimal or no units? → A: 50% win probability for the current player
+
+#### Detail
+
+- **Entities, attributes, relationships** (Missing): What are the attributes of the GameState entity?
+  - **Answer**: Turn number, active player, unit positions, unit state flags, and VP scores
+  - **Rationale**: The GameState entity is not explicitly defined, making it unclear what attributes it will contain.
+- **Entities, attributes, relationships** (Missing): What are the attributes of the SearchNode entity?
+  - **Answer**: Future state, visit count, simulation score, child nodes, and time spent
+  - **Rationale**: The SearchNode entity is not explicitly defined, making it unclear what attributes it will contain.
+- **Scoring Logic** (Missing): How is the evaluation score calculated?
+  - **Answer**: The evaluation score should be a numerical value representing the win probability for the current player, based on MCTS tree search results
+  - **Rationale**: The evaluation score is necessary for the system to objectively rate a player's position.
+- **Testing** (Missing): What is the expected size limit for GameState payloads?
+  - **Answer**: 10KB - 1MB, depending on the complexity of the board state and unit positions
+  - **Rationale**: A size limit for GameState payloads is necessary to ensure the system can process large and complex board states without running out of memory or crashing.
+- **Scoring Logic** (Missing): What is the default evaluation score for board states with minimal or no units?
+  - **Answer**: 50% win probability for the current player
+  - **Rationale**: A default evaluation score is necessary to avoid infinite loops or undefined behavior in such scenarios.
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
