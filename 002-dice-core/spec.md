@@ -97,10 +97,15 @@ Feature: Dice core (spec 002)
     When any single value is changed
     Then verification fails
 
-  Scenario: An altered seed, commitment or context fails verification
+  Scenario Outline: An altered seed, commitment or context fails verification
     Given a valid roll result
-    When the seed, the commitment or the context is changed
+    When the <field> is changed
     Then verification fails
+    Examples:
+      | field      |
+      | seed       |
+      | commitment |
+      | context    |
 
   Scenario: The commitment comes first (C-002)
     Given a commitment was given to the other party before the roll
