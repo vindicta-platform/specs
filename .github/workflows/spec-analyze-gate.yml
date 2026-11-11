@@ -39,7 +39,7 @@ jobs:
           if [ -n "${{ inputs.feature_dir }}" ]; then
             echo "dirs=${{ inputs.feature_dir }}" >> $GITHUB_OUTPUT
           else
-            DIRS=$(git diff --name-only HEAD~1 HEAD | grep -E '(spec|plan|tasks)\.md$' | xargs -I{} dirname {} | sort -u | paste -sd ',' -)
+            DIRS=$(git diff --name-only HEAD~1 HEAD | grep -E '(^|/)(spec|plan|tasks)\.md$' | xargs -I{} dirname {} | sort -u | paste -sd ',' -)
             if [ -z "$DIRS" ]; then
               echo "::notice::No spec artifacts changed"
               echo "skip=true" >> $GITHUB_OUTPUT
