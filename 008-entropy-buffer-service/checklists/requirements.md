@@ -30,4 +30,5 @@
 - [x] No implementation details leak into specification
 
 ## Notes
+
 - Abstracted gRPC mention to "secure high-throughput interface".

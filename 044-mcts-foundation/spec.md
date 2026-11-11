@@ -59,29 +59,29 @@ As the engine, I need to generate all legal moves (movement, shooting targets, c
 
 ### Session 2026-03-07 (Automated)
 
-- Q: What is the structure of the GameState entity and its fields? → A: `turn_number`, `active_player`, `unit_positions`, `unit_state_flags`, and `vp_scores`
-- Q: What is the structure of the SearchNode entity and its fields? → A: `id`, `parent_id`, `children`, `state_hash`, `move_causing_state`, `visits`, `value_sum`, and `is_terminal_node`
-- Q: How does the engine handle infinitely looping board states or mathematically intractable numbers of permutations? → A: Implement aggressive alpha-beta pruning and hard time limits per search node
-- Q: What is the structure of the unit tests for move generation validation? → A: Unit tests with structured test cases that cover edge cases like Deep Strike and Engagement contours
-- Q: What is the structure of the unit tests for mid-game evaluation? → A: Unit tests with structured test cases that cover mid-game scenarios (e.g., Turn 4, 20 VP lead, dominant board control) to verify the engine returns a >90% win probability
+- Q: What is the expected data structure for the GameState? → A: A dictionary containing key-value pairs for turn number, active player, unit positions, unit state flags, and VP scores
+- Q: How is the evaluation score calculated? → A: A numerical value representing the win probability for the current player, based on MCTS tree search results
+- Q: How does the system handle board states with zero units or no engagement between units? → A: Implement a default evaluation score for these scenarios (e.g., 50% win probability for the current player)
+- Q: How are dice rolls handled? Are they simulated, or is an expected value calculated? → A: Calculate expected values of dice rolls using the Entropy Buffer to avoid time-consuming die simulations
+- Q: What is the expected size limit for GameState payloads? → A: 10KB - 1MB, depending on the complexity of the board state and unit positions
 
 #### Detail
 
-- **Data Model** (Missing): What is the structure of the GameState entity and its fields?
-  - **Answer**: `turn_number`, `active_player`, `unit_positions`, `unit_state_flags`, and `vp_scores`
-  - **Rationale**: Defining the structure of the GameState is essential to understanding the inputs and outputs of the MCTS Engine.
-- **Data Model** (Missing): What is the structure of the SearchNode entity and its fields?
-  - **Answer**: `id`, `parent_id`, `children`, `state_hash`, `move_causing_state`, `visits`, `value_sum`, and `is_terminal_node`
-  - **Rationale**: Understanding the structure of SearchNodes is crucial for developing the MCTS algorithm and understanding the tree representation.
-- **Edge Case** (Partial): How does the engine handle infinitely looping board states or mathematically intractable numbers of permutations?
-  - **Answer**: Implement aggressive alpha-beta pruning and hard time limits per search node
-  - **Rationale**: Handling such situations prevents the engine from getting stuck in infinite loops or becoming computationally expensive.
-- **Testing** (Missing): What is the structure of the unit tests for move generation validation?
-  - **Answer**: Unit tests with structured test cases that cover edge cases like Deep Strike and Engagement contours
-  - **Rationale**: Ensuring the engine generates legal moves in all scenarios is critical for the accuracy of the MCTS algorithm.
-- **Testing** (Missing): What is the structure of the unit tests for mid-game evaluation?
-  - **Answer**: Unit tests with structured test cases that cover mid-game scenarios (e.g., Turn 4, 20 VP lead, dominant board control) to verify the engine returns a >90% win probability
-  - **Rationale**: Ensuring the engine evaluates game states correctly is essential for the accuracy of the MCTS algorithm.
+- **Data Model** (Partial): What is the expected data structure for the GameState?
+  - **Answer**: A dictionary containing key-value pairs for turn number, active player, unit positions, unit state flags, and VP scores
+  - **Rationale**: The data structure for GameState is not explicitly defined, making it unclear how the system will process and interpret the board state.
+- **Scoring Logic** (Missing): How is the evaluation score calculated?
+  - **Answer**: A numerical value representing the win probability for the current player, based on MCTS tree search results
+  - **Rationale**: The evaluation score is not defined, making it unclear how the system determines the win probability for a given board state.
+- **Edge Case** (Missing): How does the system handle board states with zero units or no engagement between units?
+  - **Answer**: Implement a default evaluation score for these scenarios (e.g., 50% win probability for the current player)
+  - **Rationale**: The system should have a defined behavior for board states with minimal or no units, to avoid infinite loops or undefined behavior.
+- **Scoring Logic** (Missing): How are dice rolls handled? Are they simulated, or is an expected value calculated?
+  - **Answer**: Calculate expected values of dice rolls using the Entropy Buffer to avoid time-consuming die simulations
+  - **Rationale**: The specification mentions dice rolls but does not specify whether they are simulated or calculated, which could impact the system's performance and accuracy.
+- **Testing** (Missing): What is the expected size limit for GameState payloads?
+  - **Answer**: 10KB - 1MB, depending on the complexity of the board state and unit positions
+  - **Rationale**: A size limit for GameState payloads is necessary to ensure the system can process large and complex board states without running out of memory or crashing.
 
 ## Success Criteria *(mandatory)*
 
