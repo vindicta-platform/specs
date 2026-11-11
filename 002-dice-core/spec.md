@@ -68,7 +68,7 @@ These resolve ambiguities found when the two existing implementations were read 
 (https://github.com/vindicta-platform/vindicta-foundation/issues/52, https://github.com/vindicta-platform/vindicta-engine/issues/21, https://github.com/vindicta-platform/vindicta-engine/issues/22). Status stays Draft until they are approved.
 
 - **C-001 (User Story 2, FR-002): the proof binds the result.** A proof is valid only if every returned value can be recomputed from the committed seed, the context and the value's position. Showing that a seed matches a commitment is not enough.
-- **C-002 (FR-002): the commitment comes first.** The commitment is given to the other party before any input that could influence the outcome is fixed. The seed is revealed afterwards.
+- **C-002 (FR-002): the commitment comes first.** The commitment is given to the other party before any external input that could influence the outcome is fixed. The seed is chosen before its commitment is generated, kept secret, and revealed afterwards.
 - **C-003 (User Story 1, SC-001): the mapping to a range is exactly uniform.** Reducing random bits with a remainder is not acceptable unless the bit range is an exact multiple of the die range. Uniformity of the mapping is shown by an exhaustive check at reduced width, not by sampling alone.
 - **C-004 (Edge Case 1): range limits.** The lower bound is at least 1, the upper bound is above the lower bound, the count is at least 1, and the range is at most 2^32 wide. Anything else is refused with a validation error.
 - **C-005 (FR-004): the deterministic mode is unreachable in production.** It requires an explicit testing mode. Supplying a seed in production mode is an error, and no production code path constructs the deterministic generator.
