@@ -24,22 +24,23 @@ jobs:
   pipeline:
     name: Speckit Clarify → Plan → Tasks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 2
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.12'
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
 
       - name: Install dependencies
-        run: uv sync --all-extras 2>/dev/null || uv sync 2>/dev/null || true
+        run: uv sync --no-build --all-extras 2>/dev/null || uv sync --no-build 2>/dev/null || true
 
       - name: Cache Ollama models
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.ollama
           key: ${{ runner.os }}-ollama-phi3
@@ -75,7 +76,7 @@ jobs:
         run: |
           echo "🔍 Running clarify for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
           if [ -f "scripts/speckit_clarify.py" ]; then
-            uv run python scripts/speckit_clarify.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
+            uv run --no-build python scripts/speckit_clarify.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
             echo "✅ Clarify complete" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ speckit_clarify.py not found, skipping" >> $GITHUB_STEP_SUMMARY
@@ -89,7 +90,7 @@ jobs:
         run: |
           echo "📋 Running plan for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
           if [ -f "scripts/speckit_plan.py" ]; then
-            uv run python scripts/speckit_plan.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
+            uv run --no-build python scripts/speckit_plan.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
             echo "✅ Plan complete" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ speckit_plan.py not found, skipping" >> $GITHUB_STEP_SUMMARY
@@ -103,7 +104,7 @@ jobs:
         run: |
           echo "📝 Running tasks for ${{ steps.detect.outputs.feature_dir }}..." >> $GITHUB_STEP_SUMMARY
           if [ -f "scripts/speckit_tasks.py" ]; then
-            uv run python scripts/speckit_tasks.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
+            uv run --no-build python scripts/speckit_tasks.py --feature "${{ steps.detect.outputs.feature_dir }}" 2>&1 | tail -20 || true
             echo "✅ Tasks complete" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ speckit_tasks.py not found, skipping" >> $GITHUB_STEP_SUMMARY
@@ -114,7 +115,7 @@ jobs:
 
       - name: Create PR with generated artifacts
         if: steps.detect.outputs.skip == 'false'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "speckit: auto-generate pipeline artifacts for ${{ steps.detect.outputs.feature_dir }}"

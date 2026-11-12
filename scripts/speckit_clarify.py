@@ -290,9 +290,21 @@ def create_branch_and_pr(
     today = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
     branch_name = f"speckit/clarify-{feature_dir}-{today}"
 
-    # Get the main branch SHA
+    # Get the main branch SHA and verify the spec actually differs on main
     main_branch = repo.get_branch("main")
     main_sha = main_branch.commit.sha
+    try:
+        main_file = repo.get_contents(spec_path, ref=main_sha)
+        main_text = (
+            main_file.decoded_content.decode("utf-8")
+            if not isinstance(main_file, list)
+            else main_file[0].decoded_content.decode("utf-8")
+        )
+        if main_text == updated_content:
+            log.info("Updated content matches main for %s; skipping branch creation.", spec_path)
+            return None
+    except Exception:
+        log.warning("Could not read %s on main; proceeding with branch creation", spec_path)
 
     # Create the branch
     try:
@@ -320,7 +332,11 @@ def create_branch_and_pr(
             branch=branch_name,
         )
     except Exception:
-        log.exception("Failed to update spec file on branch")
+        log.exception("Failed to update spec file on branch; cleaning up %s", branch_name)
+        try:
+            repo.get_git_ref(f"heads/{branch_name}").delete()
+        except Exception:
+            pass
         return None
 
     # Create the PR
@@ -353,6 +369,12 @@ def create_branch_and_pr(
     """)
 
     try:
+        existing_prs = list(
+            repo.get_pulls(state="open", head=f"{repo.owner.login}:{branch_name}", base="main")
+        )
+        if existing_prs:
+            log.info("Existing open PR #%d found: %s", existing_prs[0].number, existing_prs[0].html_url)
+            return existing_prs[0].html_url
         pr = repo.create_pull(
             title=f"chore(specs): auto-clarify {feature_dir}",
             body=pr_body,
@@ -362,7 +384,11 @@ def create_branch_and_pr(
         log.info("Created PR #%d: %s", pr.number, pr.html_url)
         return pr.html_url
     except Exception:
-        log.exception("Failed to create PR")
+        log.exception("Failed to create PR; cleaning up dangling branch %s", branch_name)
+        try:
+            repo.get_git_ref(f"heads/{branch_name}").delete()
+        except Exception:
+            pass
         return None
 
 
